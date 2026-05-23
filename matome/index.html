@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATOME — Simulador de Consolidação de Dívidas</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f3ef; --dark: #2d2d2d; --gold: #c9a84c; --gold-dim: #8a6e28;
+  --text: #2d2d2d; --label: #888; --border: #d0c8b8; --divider: #e0d8c8;
+  --before-bg: #fff5f5; --before-border: #f0c0c0; --before-color: #cc0000;
+  --after-bg: #f5fff8;  --after-border: #a0d8b0;  --after-color: #006600;
+  --blue: #7ab4d4; --blue-dim: #4a8aaa;
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header { background: var(--dark); border-bottom: 3px solid var(--gold); padding: 16px 24px; }
+.logo { font-size: 24px; font-weight: 300; color: #fff; letter-spacing: 5px; text-transform: uppercase; }
+.logo strong { font-weight: 900; color: var(--gold); }
+.tagline { font-size: 10px; color: #888; letter-spacing: 1.5px; margin-top: 3px; }
+
+.steps { display: flex; background: #fff; border-bottom: 1px solid var(--divider); position: sticky; top: 0; z-index: 10; }
+.step { flex: 1; padding: 12px 6px; text-align: center; font-size: 10px; color: #aaa; border-bottom: 3px solid transparent; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.4; transition: all 0.2s; user-select: none; }
+.step.active { color: var(--dark); border-bottom-color: var(--gold); font-weight: 700; }
+.step.done { color: var(--gold); }
+
+.tela { display: none; }
+.tela.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.container { max-width: 680px; margin: 0 auto; padding: 28px 20px; }
+
+.sec-title { font-size: 10px; font-weight: 700; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--divider); padding-bottom: 8px; margin-bottom: 18px; }
+.sec-title.b { color: var(--blue); border-bottom-color: #b8d8ea; }
+
+.parte-badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 10px; border-radius: 3px; margin-bottom: 12px; }
+.parte-badge.a { background: #3a2d0a; color: var(--gold); }
+.parte-badge.b { background: #0a2030; color: var(--blue); }
+
+.field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; color: var(--label); line-height: 1.4; }
+.field label em { font-style: normal; color: #bbb; font-size: 10px; display: block; }
+.field input, .field select {
+  padding: 10px 0; border: none; border-bottom: 1.5px solid var(--border);
+  background: transparent; font-size: 15px; font-weight: 600; color: var(--text); width: 100%;
+  border-radius: 0; -webkit-appearance: none; appearance: none;
+}
+.field input:focus, .field select:focus { outline: none; border-bottom-color: var(--gold); }
+.field input[type="date"] { font-weight: 400; font-size: 14px; }
+.field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 4px center; padding-right: 20px; }
+
+/* Read-only display fields */
+.field-display { display: flex; flex-direction: column; gap: 5px; }
+.field-display label { font-size: 11px; color: var(--label); line-height: 1.4; }
+.field-display label em { font-style: normal; color: #bbb; font-size: 10px; display: block; }
+.field-display .disp-val { padding: 10px 0; border-bottom: 1.5px dashed #d0c8b8; font-size: 15px; font-weight: 600; color: #aaa; }
+
+.total-box { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gold); border-radius: 4px; padding: 12px 16px; background: #fffdf7; margin-bottom: 24px; flex-wrap: wrap; gap: 6px; }
+.total-box .lbl { font-size: 11px; color: var(--label); letter-spacing: 1px; text-transform: uppercase; }
+.total-box .val { font-size: 20px; font-weight: 700; }
+
+.calc-box { background: var(--dark); border-radius: 6px; padding: 24px 28px; margin-bottom: 24px; }
+.calc-title { font-size: 11px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px; }
+.calc-slbl { font-size: 11px; padding: 8px 0 4px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+.calc-slbl.a { color: var(--gold); }
+.calc-slbl.b { color: var(--blue); }
+.calc-line { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; padding: 5px 0; color: #ccc; gap: 12px; }
+.calc-line .ck { flex: 1; }
+.calc-line .cv { white-space: nowrap; font-size: 15px; }
+.calc-line .plus { color: #555; margin-right: 8px; }
+.calc-line.subtot { border-top: 1px dashed #3d3d3d; margin-top: 6px; padding-top: 10px; }
+.calc-line.subtot .ck { color: #bbb; font-size: 13px; }
+.calc-line.subtot .cv { font-size: 15px; }
+.calc-line.parc-a { padding-top: 4px; }
+.calc-line.parc-a .ck { color: var(--gold-dim); font-size: 12px; }
+.calc-line.parc-a .cv { color: var(--gold); font-size: 26px; font-weight: 900; }
+.calc-line.parc-b { padding-top: 4px; }
+.calc-line.parc-b .ck { color: var(--blue-dim); font-size: 12px; }
+.calc-line.parc-b .cv { color: var(--blue); font-size: 26px; font-weight: 900; }
+.calc-line.total-f { border-top: 2px solid #555; margin-top: 14px; padding-top: 16px; }
+.calc-line.total-f .ck { color: #fff; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; }
+.calc-line.total-f .cv { color: var(--gold); font-size: 34px; font-weight: 900; }
+.calc-sep { border: none; border-top: 1px solid #3a3a3a; margin: 14px 0; }
+
+.btn { width: 100%; padding: 14px; background: var(--dark); border: none; border-radius: 4px; font-size: 13px; font-weight: 700; color: var(--gold); cursor: pointer; letter-spacing: 3px; text-transform: uppercase; touch-action: manipulation; transition: background 0.15s; }
+.btn:hover { background: #3d3d3d; }
+.btn:active { background: #1a1a1a; }
+.btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--label); letter-spacing: 1px; margin-bottom: 10px; }
+.btn.secondary:hover { border-color: var(--dark); color: var(--dark); background: transparent; }
+
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.result-col { border-radius: 4px; padding: 14px; }
+.result-col.before { background: var(--before-bg); border: 1px solid var(--before-border); }
+.result-col.after  { background: var(--after-bg);  border: 1px solid var(--after-border); }
+.col-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid; }
+.result-col.before .col-title { color: var(--before-color); border-color: var(--before-border); }
+.result-col.after  .col-title { color: var(--after-color);  border-color: var(--after-border); }
+.result-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; gap: 4px; }
+.result-row .ri { color: #555; flex: 1; line-height: 1.4; }
+.result-row .ra { font-weight: 600; white-space: nowrap; }
+.result-row.tr  { border-top: 1px solid #ccc; margin-top: 6px; padding-top: 8px; font-weight: 700; }
+.result-row.note { font-size: 10px; color: #999; font-style: italic; }
+.result-row.zero .ra { color: var(--after-color); }
+.result-row.ssep { border-top: 1px dashed #ccc; margin-top: 4px; padding-top: 4px; }
+
+.eco-box { background: var(--dark); border-radius: 4px; padding: 24px 16px; text-align: center; margin-bottom: 20px; }
+.eco-box .eco-lbl { font-size: 10px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.eco-box .eco-big { font-size: 32px; font-weight: 900; color: var(--gold); line-height: 1.2; }
+.eco-box .eco-sub { font-size: 12px; color: #888; margin-top: 10px; line-height: 1.8; }
+
+.proposta-resumo { margin-bottom: 20px; font-size: 12px; color: #888; line-height: 1.8; border: 1px solid var(--divider); border-radius: 4px; padding: 12px 14px; }
+
+.pdf-header { display: none; }
+.pdf-footer { display: none; }
+
+@media (max-width: 480px) {
+  .header { padding: 14px 16px; } .logo { font-size: 20px; letter-spacing: 3px; }
+  .step { font-size: 9px; padding: 10px 4px; }
+  .container { padding: 20px 16px; }
+  .field-group { grid-template-columns: 1fr; gap: 14px; }
+  .result-grid { grid-template-columns: 1fr; }
+  .eco-box .eco-big { font-size: 26px; }
+  .calc-box { padding: 16px; }
+  .calc-line { font-size: 13px; padding: 4px 0; }
+  .calc-line .cv { font-size: 13px; }
+  .calc-line.subtot .cv { font-size: 13px; }
+  .calc-line.parc-a .cv { font-size: 20px; }
+  .calc-line.parc-b .cv { font-size: 20px; }
+  .calc-line.total-f .cv { font-size: 26px; }
+  .calc-line.total-f .ck { font-size: 13px; }
+  .btn { font-size: 12px; letter-spacing: 2px; }
+}
+@media (min-width: 481px) and (max-width: 768px) { .result-grid { grid-template-columns: 1fr; } }
+
+@media print {
+  @page { margin: 15mm 20mm; size: A4 portrait; }
+  body { background: #fff; font-size: 12px; }
+  .steps, .header, .btn, .tela-1-content, .tela-2-content { display: none !important; }
+  .tela { display: block !important; }
+  .pdf-header { display: block !important; border-bottom: 3px solid #c9a84c; padding-bottom: 14px; margin-bottom: 22px; }
+  .pdf-logo { font-size: 22px; font-weight: 300; letter-spacing: 5px; text-transform: uppercase; color: #2d2d2d; }
+  .pdf-logo strong { font-weight: 900; color: #c9a84c; }
+  .pdf-tagline { font-size: 9px; color: #888; letter-spacing: 2px; margin-top: 3px; }
+  .pdf-client { font-size: 12px; color: #555; margin-top: 8px; }
+  .result-grid { grid-template-columns: 1fr 1fr !important; }
+  .calc-box, .eco-box, .result-col.before, .result-col.after, .parte-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .calc-box { background: #2d2d2d !important; }
+  .eco-box  { background: #2d2d2d !important; }
+  .pdf-footer { display: block !important; margin-top: 20px; font-size: 9px; color: #bbb; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><strong>MATOME</strong></div>
+  <div class="tagline">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div>
+</div>
+<div class="steps">
+  <div class="step active" id="step1">① Situação Atual</div>
+  <div class="step"        id="step2">② Proposta</div>
+  <div class="step"        id="step3">③ Resultado</div>
+</div>
+
+<!-- ══ TELA 1 ══ -->
+<div class="tela active" id="tela1">
+  <div class="container tela-1-content">
+
+    <div class="sec-title">① Dados do cliente · お客様情報</div>
+    <div class="field-group">
+      <div class="field"><label>Nome <em>お名前</em></label><input type="text" id="f-nome" placeholder="Yamamoto Hiroshi" autocomplete="off"></div>
+      <div class="field"><label>Idade <em>年齢</em></label><input type="number" id="f-idade" placeholder="35" min="18" max="99" inputmode="numeric"></div>
+      <div class="field" style="grid-column:1/-1"><label>Data da simulação <em>シミュレーション日</em></label><input type="date" id="f-data"></div>
+    </div>
+
+    <div class="sec-title">Parcelas mensais atuais · 現在の月額支出</div>
+    <div class="field-group">
+      <div class="field"><label>住宅ローン <em>Financiamento da casa</em></label><input type="text" id="f-financiamento" data-yen inputmode="numeric" placeholder="¥ 90.000"></div>
+      <div class="field"><label>リフォームローン <em>Empréstimo reforma</em></label><input type="text" id="f-reforma-loan" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>車ローン <em>Carro</em></label><input type="text" id="f-carro" data-yen inputmode="numeric" placeholder="¥ 40.000"></div>
+      <div class="field"><label>クレジット <em>Cartão de crédito</em></label><input type="text" id="f-cartao" data-yen inputmode="numeric" placeholder="¥ 30.000"></div>
+      <div class="field"><label>電気代 <em>Conta de luz</em></label><input type="text" id="f-luz" data-yen inputmode="numeric" placeholder="¥ 20.000"></div>
+      <div class="field"><label>ガス代 <em>Conta de gás</em></label><input type="text" id="f-gas" data-yen inputmode="numeric" placeholder="¥ 15.000"></div>
+      <div class="field"><label>その他 1 <em>Outros 1</em></label><input type="text" id="f-outros" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>その他 2 <em>Outros 2</em></label><input type="text" id="f-outros2" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+    </div>
+
+    <div class="total-box">
+      <span class="lbl">Total mensal atual · 現在の月額合計</span>
+      <span class="val" id="total-atual">¥ 0</span>
+    </div>
+
+    <div class="sec-title">Saldo devedor · 残債合計</div>
+    <div class="field-group">
+      <div class="field"><label>残債 住宅ローン <em>Saldo devedor casa</em></label><input type="text" id="f-res-casa" data-yen inputmode="numeric" placeholder="¥ 15.000.000"></div>
+      <div class="field"><label>残債 リフォームローン <em>Saldo empréstimo reforma</em></label><input type="text" id="f-res-reforma-loan" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>残債 車ローン <em>Saldo devedor carro</em></label><input type="text" id="f-res-carro" data-yen inputmode="numeric" placeholder="¥ 2.000.000"></div>
+      <div class="field"><label>残債 クレジット <em>Saldo cartão</em></label><input type="text" id="f-res-cartao" data-yen inputmode="numeric" placeholder="¥ 500.000"></div>
+      <div class="field"><label>その他ローン 1 <em>Outros empréstimos 1</em></label><input type="text" id="f-res-outros" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>その他ローン 2 <em>Outros empréstimos 2</em></label><input type="text" id="f-res-outros2" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+    </div>
+
+    <button class="btn" onclick="avancarParaTela2()">Próximo →</button>
+  </div>
+</div>
+
+<!-- ══ TELA 2 ══ -->
+<div class="tela" id="tela2">
+  <div class="container tela-2-content">
+
+    <!-- PARTE A: Casa + Obras -->
+    <span class="parte-badge a">Parte A — 住宅ローン + Obras</span>
+    <div class="sec-title">Casa + Reforma / Solar / Obras · 住宅ローン条件</div>
+
+    <!-- Saldos Parte A (somente leitura) -->
+    <div class="field-group">
+      <div class="field-display"><label>残債 住宅ローン <em>Saldo casa (da Tela 1)</em></label><div class="disp-val" id="d-res-casa">¥ 0</div></div>
+      <div class="field-display"><label>残債 リフォームローン <em>Saldo emprést. reforma (da Tela 1)</em></label><div class="disp-val" id="d-res-reforma-loan">¥ 0</div></div>
+    </div>
+
+    <div class="field-group">
+      <div class="field"><label>リフォーム <em>Reforma</em></label><input type="text" id="f-reforma" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>外構工事 <em>Área externa</em></label><input type="text" id="f-exterior" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>太陽光発電 <em>Painel solar</em></label><input type="text" id="f-solar" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+      <div class="field"><label>その他工事 <em>Outras obras</em></label><input type="text" id="f-outras-obras" data-yen inputmode="numeric" placeholder="¥ 0"></div>
+    </div>
+    <div class="field-group">
+      <div class="field"><label>金利 Casa <em>Taxa de juros ao ano (%)</em></label><input type="number" id="f-taxa-casa" value="0" min="0.1" max="20" step="0.01" inputmode="decimal"></div>
+      <div class="field"><label>返済期間 Casa <em>Prazo em anos (máx. 50)</em></label><input type="number" id="f-prazo-casa" value="35" min="1" max="50" step="1" inputmode="numeric"></div>
+      <div class="field"><label>太陽光発電 <em>Elimina conta de luz?</em></label>
+        <select id="f-solar-elim">
+          <option value="1">✅ Sim — elimina luz</option>
+          <option value="0">❌ Não incluído</option>
+        </select>
+      </div>
+      <div class="field"><label>オール電化 <em>Elimina conta de gás?</em></label>
+        <select id="f-all-denka">
+          <option value="0">❌ Não incluído</option>
+          <option value="1">✅ Sim — elimina gás</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- PARTE B: Dívidas -->
+    <span class="parte-badge b">Parte B — まとめ融資 (Dívidas)</span>
+    <div class="sec-title b">Dívidas consolidadas · まとめ項目</div>
+
+    <!-- Exibição das dívidas da Tela 1 (somente leitura) -->
+    <div class="field-group">
+      <div class="field-display"><label>残債 車ローン <em>Saldo carro (da Tela 1)</em></label><div class="disp-val" id="d-res-carro">¥ 0</div></div>
+      <div class="field-display"><label>残債 クレジット <em>Saldo cartão (da Tela 1)</em></label><div class="disp-val" id="d-res-cartao">¥ 0</div></div>
+      <div class="field-display"><label>その他ローン 1 <em>Outros emprést. 1 (da Tela 1)</em></label><div class="disp-val" id="d-res-outros">¥ 0</div></div>
+    <div class="field-display"><label>その他ローン 2 <em>Outros emprést. 2 (da Tela 1)</em></label><div class="disp-val" id="d-res-outros2">¥ 0</div></div>
+    </div>
+
+    <div class="field-group">
+      <div class="field"><label>金利 MATOME <em>Taxa de juros ao ano (%)</em></label><input type="number" id="f-taxa-matome" value="0" min="0.1" max="20" step="0.01" inputmode="decimal"></div>
+      <div class="field"><label>返済期間 MATOME <em>Prazo em anos (máx. 50)</em></label><input type="number" id="f-prazo-matome" value="10" min="1" max="50" step="1" inputmode="numeric"></div>
+    </div>
+
+    <!-- CALC BOX -->
+    <div class="calc-box">
+      <div class="calc-title">Composição do novo financiamento · 融資総額（自動計算）</div>
+
+      <div class="calc-slbl a">▸ Parte A — 住宅ローン + Obras</div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px">残債 住宅ローン <em style="color:#555;font-size:10px">(casa)</em></span><span class="cv" id="calc-res-casa">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>残債 リフォームローン <em style="color:#555;font-size:10px">(emprést. reforma)</em></span><span class="cv" id="calc-res-reforma-loan">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>リフォーム <em style="color:#555;font-size:10px">(nova reforma)</em></span><span class="cv" id="calc-reforma">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>外構工事 <em style="color:#555;font-size:10px">(área externa)</em></span><span class="cv" id="calc-exterior">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>太陽光発電 <em style="color:#555;font-size:10px">(painel solar)</em></span><span class="cv" id="calc-solar">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>その他工事 <em style="color:#555;font-size:10px">(outras obras)</em></span><span class="cv" id="calc-outras-obras">¥ 0</span></div>
+      <div class="calc-line subtot"><span class="ck">Subtotal Parte A</span><span class="cv" id="calc-total-a">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>Parte Burocrática <em style="color:#555;font-size:10px">(taxas banco + refin. + escrivão)</em></span><span class="cv" id="calc-buroc">¥ 0</span></div>
+      <div class="calc-line subtot"><span class="ck">Total A (final)</span><span class="cv" id="calc-total-a-final">¥ 0</span></div>
+      <div class="calc-line parc-a"><span class="ck" id="calc-pmt-casa-label">Parcela A · 35 anos · 2,84%</span><span class="cv" id="calc-pmt-casa">¥ 0</span></div>
+
+      <hr class="calc-sep">
+
+      <div class="calc-slbl b">▸ Parte B — まとめ融資 (Dívidas)</div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px">残債 車ローン <em style="color:#555;font-size:10px">(carro)</em></span><span class="cv" id="calc-res-carro">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>残債 クレジット <em style="color:#555;font-size:10px">(cartão)</em></span><span class="cv" id="calc-res-cartao">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>その他ローン 1 <em style="color:#555;font-size:10px">(outros 1)</em></span><span class="cv" id="calc-res-outros">¥ 0</span></div>
+      <div class="calc-line"><span class="ck" style="padding-left:8px"><span class="plus">+</span>その他ローン 2 <em style="color:#555;font-size:10px">(outros 2)</em></span><span class="cv" id="calc-res-outros2">¥ 0</span></div>
+      <div class="calc-line subtot"><span class="ck">Total Parte B</span><span class="cv" id="calc-total-b">¥ 0</span></div>
+      <div class="calc-line parc-b"><span class="ck" id="calc-pmt-matome-label">Parcela B · 10 anos · 3,29%</span><span class="cv" id="calc-pmt-matome">¥ 0</span></div>
+
+      <div class="calc-line total-f">
+        <span class="ck">NOVA PARCELA TOTAL · 新月額合計</span>
+        <span class="cv" id="calc-pmt-total">¥ 0</span>
+      </div>
+    </div>
+
+    <button class="btn secondary" onclick="goTo(1)">← Voltar</button>
+    <button class="btn" onclick="avancarParaTela3()">Ver resultado →</button>
+  </div>
+</div>
+
+<!-- ══ TELA 3 ══ -->
+<div class="tela" id="tela3">
+  <div class="pdf-header container">
+    <div class="pdf-logo"><strong>MATOME</strong></div>
+    <div class="pdf-tagline">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div>
+    <div class="pdf-client" id="pdf-client-info"></div>
+  </div>
+  <div class="container">
+    <div class="sec-title" id="result-title">③ Resultado</div>
+    <div class="result-grid">
+
+      <div class="result-col before">
+        <div class="col-title">❌ Situação Atual · 現状</div>
+        <div class="result-row"><span class="ri">住宅ローン <em style="font-size:10px;color:#aaa">(financiamento)</em></span><span class="ra" id="r-financiamento">—</span></div>
+        <div class="result-row" id="r-reforma-loan-row"><span class="ri">リフォームローン <em style="font-size:10px;color:#aaa">(reform. loan)</em></span><span class="ra" id="r-reforma-loan">—</span></div>
+        <div class="result-row"><span class="ri">車ローン <em style="font-size:10px;color:#aaa">(carro)</em></span><span class="ra" id="r-carro">—</span></div>
+        <div class="result-row"><span class="ri">クレジット <em style="font-size:10px;color:#aaa">(cartão)</em></span><span class="ra" id="r-cartao">—</span></div>
+        <div class="result-row"><span class="ri">電気代 <em style="font-size:10px;color:#aaa">(luz)</em></span><span class="ra" id="r-luz">—</span></div>
+        <div class="result-row"><span class="ri">ガス代 <em style="font-size:10px;color:#aaa">(gás)</em></span><span class="ra" id="r-gas">—</span></div>
+        <div class="result-row" id="r-outros-row"><span class="ri">その他 1 <em style="font-size:10px;color:#aaa">(outros 1)</em></span><span class="ra" id="r-outros">—</span></div>
+        <div class="result-row" id="r-outros2-row"><span class="ri">その他 2 <em style="font-size:10px;color:#aaa">(outros 2)</em></span><span class="ra" id="r-outros2">—</span></div>
+        <div class="result-row tr"><span class="ri">TOTAL</span><span class="ra" id="r-total-antes" style="color:var(--before-color);font-size:15px">—</span></div>
+      </div>
+
+      <div class="result-col after">
+        <div class="col-title">✅ Com MATOME · まとめ後</div>
+        <div class="result-row">
+          <span class="ri" style="color:var(--gold-dim)">Parte A · 住宅+Obras<em id="r-prazo-casa-label" style="font-size:10px;color:#aaa;display:block"></em></span>
+          <span class="ra" id="r-parcela-casa" style="color:var(--gold-dim)">—</span>
+        </div>
+        <div class="result-row ssep">
+          <span class="ri" style="color:var(--blue-dim)">Parte B · まとめ<em id="r-prazo-matome-label" style="font-size:10px;color:#aaa;display:block"></em></span>
+          <span class="ra" id="r-parcela-matome" style="color:var(--blue-dim)">—</span>
+        </div>
+        <div class="result-row zero">
+          <span class="ri">電気代 <em id="r-solar-label" style="font-size:10px;color:#888"></em></span>
+          <span class="ra" id="r-luz-depois">—</span>
+        </div>
+        <div class="result-row zero">
+          <span class="ri">ガス代 <em id="r-gas-label" style="font-size:10px;color:#888"></em></span>
+          <span class="ra" id="r-gas-depois" style="color:var(--after-color)">—</span>
+        </div>
+        <div class="result-row note">
+          <span>車・クレジット・リフォームローン・その他ローン: まとめ に統合済<br><em style="font-size:10px">(carro, cartão, emprést. reforma e outros consolidados na Parte B)</em></span>
+        </div>
+        <div class="result-row tr">
+          <span class="ri">TOTAL</span>
+          <span class="ra" id="r-total-depois" style="color:var(--after-color);font-size:15px">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="eco-box">
+      <div class="eco-lbl">Economia mensal · 月の節約額</div>
+      <div class="eco-big" id="eco-mensal">—</div>
+      <div class="eco-sub" id="eco-sub">—</div>
+    </div>
+
+    <div class="proposta-resumo" id="proposta-resumo"></div>
+
+    <button class="btn secondary" onclick="goTo(2)">← Voltar</button>
+    <button class="btn" onclick="gerarPDF()">📄 Gerar PDF personalizado</button>
+  </div>
+  <div class="pdf-footer container">Simulação gerada pelo Simulador MATOME &nbsp;·&nbsp; Valores ilustrativos sujeitos à análise de crédito</div>
+</div>
+
+<script>
+'use strict';
+const state = {
+  nome:'',idade:'',data:'',
+  financiamento:0,reformaLoan:0,carro:0,cartao:0,luz:0,gas:0,outros:0,outros2:0,
+  residuoCasa:0,residuoReformaLoan:0,residuoCarro:0,residuoCartao:0,residuoOutros:0,residuoOutros2:0,
+  reforma:0,exterior:0,solar:0,outrasObras:0,
+  taxaCasa:2.84,prazoCasa:35,
+  taxaMatome:3.29,prazoMatome:10,
+  solarElim:true,allDenka:false
+};
+
+function py(s){if(!s)return 0;return parseInt(String(s).replace(/[¥\s\.]/g,''),10)||0;}
+function fy(n){var v=Math.round(n);if(!v)return'¥ 0';return'¥ '+v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function maskInput(el){var r=py(el.value);el.value=r?fy(r):'';}
+function bindYen(cont){
+  cont.querySelectorAll('input[data-yen]').forEach(el=>{
+    el.addEventListener('input',()=>{el.value=el.value.replace(/[^\d]/g,'');});
+    el.addEventListener('blur',()=>maskInput(el));
+    el.addEventListener('focus',()=>{var r=py(el.value);el.value=r||'';});
+  });
+}
+function calcPMT(p,ar,y){
+  if(!p||!y)return 0;
+  var r=ar/12/100,n=y*12;
+  if(r===0)return Math.round(p/n);
+  return Math.round(p*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1));
+}
+function goTo(n){
+  document.querySelectorAll('.tela').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tela'+n).classList.add('active');
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i+1<n)s.classList.add('done');
+    else if(i+1===n)s.classList.add('active');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function initTela1(){
+  document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+  bindYen(document.getElementById('tela1'));
+  ['f-financiamento','f-reforma-loan','f-carro','f-cartao','f-luz','f-gas','f-outros','f-outros2'].forEach(id=>{
+    var el=document.getElementById(id);
+    el.addEventListener('input',atualizarTotalAtual);
+    el.addEventListener('blur',atualizarTotalAtual);
+  });
+}
+function atualizarTotalAtual(){
+  var ids=['f-financiamento','f-reforma-loan','f-carro','f-cartao','f-luz','f-gas','f-outros','f-outros2'];
+  var t=ids.reduce((s,id)=>s+py(document.getElementById(id).value),0);
+  document.getElementById('total-atual').textContent=fy(t);
+}
+function lerTela1(){
+  state.nome=document.getElementById('f-nome').value.trim();
+  state.idade=document.getElementById('f-idade').value;
+  state.data=document.getElementById('f-data').value;
+  state.financiamento=py(document.getElementById('f-financiamento').value);
+  state.reformaLoan=py(document.getElementById('f-reforma-loan').value);
+  state.carro=py(document.getElementById('f-carro').value);
+  state.cartao=py(document.getElementById('f-cartao').value);
+  state.luz=py(document.getElementById('f-luz').value);
+  state.gas=py(document.getElementById('f-gas').value);
+  state.outros=py(document.getElementById('f-outros').value);
+  state.outros2=py(document.getElementById('f-outros2').value);
+  state.residuoCasa=py(document.getElementById('f-res-casa').value);
+  state.residuoReformaLoan=py(document.getElementById('f-res-reforma-loan').value);
+  state.residuoCarro=py(document.getElementById('f-res-carro').value);
+  state.residuoCartao=py(document.getElementById('f-res-cartao').value);
+  state.residuoOutros=py(document.getElementById('f-res-outros').value);
+  state.residuoOutros2=py(document.getElementById('f-res-outros2').value);
+}
+function avancarParaTela2(){
+  lerTela1();
+  // Mostrar dívidas da T1 como somente leitura na T2
+  document.getElementById('d-res-casa').textContent=fy(state.residuoCasa)||'¥ 0';
+  document.getElementById('d-res-reforma-loan').textContent=fy(state.residuoReformaLoan)||'¥ 0';
+  document.getElementById('d-res-carro').textContent=fy(state.residuoCarro)||'¥ 0';
+  document.getElementById('d-res-cartao').textContent=fy(state.residuoCartao)||'¥ 0';
+  document.getElementById('d-res-outros').textContent=fy(state.residuoOutros)||'¥ 0';
+  document.getElementById('d-res-outros2').textContent=fy(state.residuoOutros2)||'¥ 0';
+  goTo(2);
+  atualizarCalcBox();
+}
+
+function initTela2(){
+  bindYen(document.getElementById('tela2'));
+  ['f-reforma','f-exterior','f-solar','f-outras-obras'].forEach(id=>{
+    var el=document.getElementById(id);
+    el.addEventListener('input',atualizarCalcBox);
+    el.addEventListener('blur',atualizarCalcBox);
+  });
+  ['f-taxa-casa','f-taxa-matome','f-prazo-casa','f-prazo-matome'].forEach(id=>
+    document.getElementById(id).addEventListener('input',atualizarCalcBox));
+  ['f-solar-elim','f-all-denka'].forEach(id=>
+    document.getElementById(id).addEventListener('change',atualizarCalcBox));
+}
+
+function atualizarCalcBox(){
+  state.reforma=py(document.getElementById('f-reforma').value);
+  state.exterior=py(document.getElementById('f-exterior').value);
+  state.solar=py(document.getElementById('f-solar').value);
+  state.outrasObras=py(document.getElementById('f-outras-obras').value);
+  state.taxaCasa=parseFloat(document.getElementById('f-taxa-casa').value)||0;
+  state.prazoCasa=parseInt(document.getElementById('f-prazo-casa').value)||35;
+  state.taxaMatome=parseFloat(document.getElementById('f-taxa-matome').value)||0;
+  state.prazoMatome=parseInt(document.getElementById('f-prazo-matome').value)||10;
+  state.solarElim=document.getElementById('f-solar-elim').value==='1';
+  state.allDenka=document.getElementById('f-all-denka').value==='1';
+
+  // Parte A: casa + obras (base)
+  var totalABase=state.residuoCasa+state.residuoReformaLoan+state.reforma+state.exterior+state.solar+state.outrasObras;
+  // Parte B: dívidas
+  var totalB=state.residuoCarro+state.residuoCartao+state.residuoOutros+state.residuoOutros2;
+  // Parte Burocrática: calculada sobre o total geral (A+B)
+  var grandTotal=totalABase+totalB;
+  var taxaBanco=Math.round(grandTotal*0.022);
+  var taxaRefinanc=Math.max(330000,Math.round(grandTotal*0.0165));
+  var taxaEscrivao=300000;
+  var parteBuroc=taxaBanco+taxaRefinanc+taxaEscrivao;
+  // Total A final (base + burocrática) → financia à taxa da Parte A
+  var totalA=totalABase+parteBuroc;
+  var parcelaA=calcPMT(totalA,state.taxaCasa,state.prazoCasa);
+  var parcelaB=calcPMT(totalB,state.taxaMatome,state.prazoMatome);
+  var tcStr=state.taxaCasa.toFixed(2).replace('.',',');
+  var tmStr=state.taxaMatome.toFixed(2).replace('.',',');
+
+  document.getElementById('calc-res-casa').textContent=fy(state.residuoCasa);
+  document.getElementById('calc-res-reforma-loan').textContent=fy(state.residuoReformaLoan);
+  document.getElementById('calc-reforma').textContent=fy(state.reforma);
+  document.getElementById('calc-exterior').textContent=fy(state.exterior);
+  document.getElementById('calc-solar').textContent=fy(state.solar);
+  document.getElementById('calc-outras-obras').textContent=fy(state.outrasObras);
+  document.getElementById('calc-total-a').textContent=fy(totalABase);
+  document.getElementById('calc-buroc').textContent=fy(parteBuroc);
+  document.getElementById('calc-total-a-final').textContent=fy(totalA);
+  document.getElementById('calc-pmt-casa').textContent=fy(parcelaA);
+  document.getElementById('calc-pmt-casa-label').textContent=`Parcela A · ${state.prazoCasa} anos · ${tcStr}%`;
+  document.getElementById('calc-res-carro').textContent=fy(state.residuoCarro);
+  document.getElementById('calc-res-cartao').textContent=fy(state.residuoCartao);
+  document.getElementById('calc-res-outros').textContent=fy(state.residuoOutros);
+  document.getElementById('calc-res-outros2').textContent=fy(state.residuoOutros2);
+  document.getElementById('calc-total-b').textContent=fy(totalB);
+  document.getElementById('calc-pmt-matome').textContent=fy(parcelaB);
+  document.getElementById('calc-pmt-matome-label').textContent=`Parcela B · ${state.prazoMatome} anos · ${tmStr}%`;
+  document.getElementById('calc-pmt-total').textContent=fy(parcelaA+parcelaB);
+}
+
+function lerTela2(){
+  state.reforma=py(document.getElementById('f-reforma').value);
+  state.exterior=py(document.getElementById('f-exterior').value);
+  state.solar=py(document.getElementById('f-solar').value);
+  state.outrasObras=py(document.getElementById('f-outras-obras').value);
+  state.taxaCasa=parseFloat(document.getElementById('f-taxa-casa').value)||0;
+  state.prazoCasa=parseInt(document.getElementById('f-prazo-casa').value)||35;
+  state.taxaMatome=parseFloat(document.getElementById('f-taxa-matome').value)||0;
+  state.prazoMatome=parseInt(document.getElementById('f-prazo-matome').value)||10;
+  state.solarElim=document.getElementById('f-solar-elim').value==='1';
+  state.allDenka=document.getElementById('f-all-denka').value==='1';
+}
+
+function avancarParaTela3(){lerTela2();renderTela3();goTo(3);}
+
+function renderTela3(){
+  var totalAntes=state.financiamento+state.reformaLoan+state.carro+state.cartao+state.luz+state.gas+state.outros+state.outros2;
+  var totalABase=state.residuoCasa+state.residuoReformaLoan+state.reforma+state.exterior+state.solar+state.outrasObras;
+  var totalB=state.residuoCarro+state.residuoCartao+state.residuoOutros+state.residuoOutros2;
+  var grandTotal=totalABase+totalB;
+  var parteBuroc=Math.round(grandTotal*0.022)+Math.max(330000,Math.round(grandTotal*0.0165))+300000;
+  var totalA=totalABase+parteBuroc;
+  var parcelaA=calcPMT(totalA,state.taxaCasa,state.prazoCasa);
+  var parcelaB=calcPMT(totalB,state.taxaMatome,state.prazoMatome);
+  var luzDepois=state.solarElim?0:state.luz;
+  var gasDepois=state.allDenka?0:state.gas;
+  var totalDepois=parcelaA+parcelaB+luzDepois+gasDepois;
+  var econMensal=totalAntes-totalDepois;
+  var tcStr=state.taxaCasa.toFixed(2).replace('.',',');
+  var tmStr=state.taxaMatome.toFixed(2).replace('.',',');
+
+  var nL=state.nome?` · ${state.nome}`:'';
+  var iL=state.idade?`, ${state.idade} anos`:'';
+  document.getElementById('result-title').textContent=`③ Resultado${nL}${iL}`;
+
+  document.getElementById('r-financiamento').textContent=fy(state.financiamento);
+  var rlRow=document.getElementById('r-reforma-loan-row');
+  if(state.reformaLoan>0){document.getElementById('r-reforma-loan').textContent=fy(state.reformaLoan);rlRow.style.display='';}
+  else rlRow.style.display='none';
+  document.getElementById('r-carro').textContent=fy(state.carro);
+  document.getElementById('r-cartao').textContent=fy(state.cartao);
+  document.getElementById('r-luz').textContent=fy(state.luz);
+  document.getElementById('r-gas').textContent=fy(state.gas);
+  var oRow=document.getElementById('r-outros-row');
+  if(state.outros>0){document.getElementById('r-outros').textContent=fy(state.outros);oRow.style.display='';}
+  else oRow.style.display='none';
+  var o2Row=document.getElementById('r-outros2-row');
+  if(state.outros2>0){document.getElementById('r-outros2').textContent=fy(state.outros2);o2Row.style.display='';}
+  else o2Row.style.display='none';
+  document.getElementById('r-total-antes').textContent=fy(totalAntes);
+
+  document.getElementById('r-prazo-casa-label').textContent=`${state.prazoCasa} anos · ${tcStr}%`;
+  document.getElementById('r-parcela-casa').textContent=fy(parcelaA);
+  document.getElementById('r-prazo-matome-label').textContent=`${state.prazoMatome} anos · ${tmStr}%`;
+  document.getElementById('r-parcela-matome').textContent=fy(parcelaB);
+  document.getElementById('r-solar-label').textContent=state.solarElim?'(painel solar)':'';
+  document.getElementById('r-luz-depois').textContent=fy(luzDepois);
+  document.getElementById('r-gas-label').textContent=state.allDenka?'(all-electric)':'';
+  document.getElementById('r-gas-depois').textContent=fy(gasDepois);
+  document.getElementById('r-total-depois').textContent=fy(totalDepois);
+
+  document.getElementById('eco-mensal').textContent=fy(econMensal)+' / mês';
+  document.getElementById('eco-sub').innerHTML=fy(econMensal*12)+' por ano<br>'+fy(econMensal*120)+' em 10 anos';
+
+  var dataFmt=state.data?new Date(state.data+'T12:00').toLocaleDateString('pt-BR'):'—';
+  var obrasExtras=[state.reforma>0?`Reforma: ${fy(state.reforma)}`:'',state.exterior>0?`Área ext.: ${fy(state.exterior)}`:'',state.solar>0?`Solar: ${fy(state.solar)}`:'',state.outrasObras>0?`Obras: ${fy(state.outrasObras)}`:''].filter(Boolean).join(' | ');
+  document.getElementById('proposta-resumo').innerHTML=
+    `<strong>Proposta MATOME</strong> · ${dataFmt}<br>`+
+    `<span style="color:var(--gold-dim)">Parte A (Casa+Obras):</span> ${fy(totalA)} · ${state.prazoCasa} anos · ${tcStr}% → <strong>${fy(parcelaA)}/mês</strong>`+(obrasExtras?` <em style="color:#aaa">(${obrasExtras})</em>`:'')+`<br>`+
+    `<span style="color:var(--blue-dim)">Parte B (Dívidas):</span> ${fy(totalB)} · ${state.prazoMatome} anos · ${tmStr}% → <strong>${fy(parcelaB)}/mês</strong>`;
+  document.getElementById('pdf-client-info').textContent=
+    [state.nome,state.idade?state.idade+' anos':'',`Simulação: ${dataFmt}`].filter(Boolean).join(' · ');
+}
+
+function gerarPDF(){window.print();}
+document.addEventListener('DOMContentLoaded',()=>{initTela1();initTela2();});
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<h2>Como o usuário preenche o simulador?</h2>
+<p class="subtitle">Escolha o fluxo que faz mais sentido para corretores e clientes</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Passo a passo (wizard)</h3>
+      <p>Tela 1: Escolhe situação atual (aluguel ou casa própria)</p>
+      <p>Tela 2: Preenche despesas atuais uma a uma</p>
+      <p>Tela 3: Vê resultado MATOME + gera PDF</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Vantagens</h4><ul><li>Mais guiado, menos intimidador</li><li>Ideal para cliente sozinho</li></ul></div>
+        <div class="cons"><h4>Desvantagens</h4><ul><li>Mais cliques até o resultado</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Página única (tudo visível)</h3>
+      <p>Todos os campos na mesma tela</p>
+      <p>Resultado aparece ao lado em tempo real enquanto digita</p>
+      <p>Botão "Gerar PDF" sempre visível</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Vantagens</h4><ul><li>Mais rápido — corretor preenche ao vivo</li><li>Cliente vê comparativo em tempo real</li></ul></div>
+        <div class="cons"><h4>Desvantagens</h4><ul><li>Pode parecer muito denso no celular</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Híbrido</h3>
+      <p>Formulário à esquerda (todos os campos visíveis)</p>
+      <p>Resultado dinâmico à direita (desktop) ou abaixo (mobile)</p>
+      <p>No celular vira passo a passo automático</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Vantagens</h4><ul><li>Desktop: poderoso para o corretor</li><li>Mobile: fluido para o cliente</li></ul></div>
+        <div class="cons"><h4>Desvantagens</h4><ul><li>Mais complexo de implementar</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

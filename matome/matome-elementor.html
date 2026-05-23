@@ -1,0 +1,476 @@
+<!-- MATOME Simulador — versão Elementor HTML Widget -->
+<style>
+#matome-app {
+  --bg:#f5f3ef;--dark:#2d2d2d;--gold:#c9a84c;--gold-dim:#8a6e28;
+  --text:#2d2d2d;--label:#888;--border:#d0c8b8;--divider:#e0d8c8;
+  --before-bg:#fff5f5;--before-border:#f0c0c0;--before-color:#cc0000;
+  --after-bg:#f5fff8;--after-border:#a0d8b0;--after-color:#006600;
+  --blue:#7ab4d4;--blue-dim:#4a8aaa;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);width:100%;overflow-x:hidden;
+}
+#matome-app *,#matome-app *::before,#matome-app *::after{box-sizing:border-box;margin:0;padding:0;}
+#matome-app .mh{background:var(--dark);border-bottom:3px solid var(--gold);padding:16px 24px;}
+#matome-app .mh-logo{font-size:24px;font-weight:300;color:#fff;letter-spacing:5px;text-transform:uppercase;}
+#matome-app .mh-logo strong{font-weight:900;color:var(--gold);}
+#matome-app .mh-tag{font-size:10px;color:#888;letter-spacing:1.5px;margin-top:3px;}
+#matome-app .msteps{display:flex;background:#fff;border-bottom:1px solid var(--divider);position:sticky;top:0;z-index:100;}
+#matome-app .mstep{flex:1;padding:12px 6px;text-align:center;font-size:10px;color:#aaa;border-bottom:3px solid transparent;letter-spacing:0.5px;text-transform:uppercase;line-height:1.4;transition:all 0.2s;user-select:none;}
+#matome-app .mstep.active{color:var(--dark);border-bottom-color:var(--gold);font-weight:700;}
+#matome-app .mstep.done{color:var(--gold);}
+#matome-app .mtela{display:none;}
+#matome-app .mtela.active{display:block;animation:mFI 0.2s ease;}
+@keyframes mFI{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#matome-app .mc{max-width:680px;margin:0 auto;padding:28px 20px;}
+#matome-app .msec{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--divider);padding-bottom:8px;margin-bottom:18px;}
+#matome-app .msec.b{color:var(--blue);border-bottom-color:#b8d8ea;}
+#matome-app .mbadge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 10px;border-radius:3px;margin-bottom:12px;}
+#matome-app .mbadge.a{background:#3a2d0a;color:var(--gold);}
+#matome-app .mbadge.b{background:#0a2030;color:var(--blue);}
+#matome-app .mfg{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px;}
+#matome-app .mf{display:flex;flex-direction:column;gap:5px;}
+#matome-app .mf label{font-size:11px;color:var(--label);line-height:1.4;}
+#matome-app .mf label em{font-style:normal;color:#bbb;font-size:10px;display:block;}
+#matome-app .mf input,#matome-app .mf select{padding:10px 0;border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:15px;font-weight:600;color:var(--text);width:100%;border-radius:0;-webkit-appearance:none;appearance:none;font-family:inherit;}
+#matome-app .mf input:focus,#matome-app .mf select:focus{outline:none;border-bottom-color:var(--gold);}
+#matome-app .mf input[type="date"]{font-weight:400;font-size:14px;}
+#matome-app .mf select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;padding-right:20px;}
+#matome-app .mf-full{grid-column:1/-1;}
+#matome-app .mfd{display:flex;flex-direction:column;gap:5px;}
+#matome-app .mfd label{font-size:11px;color:var(--label);line-height:1.4;}
+#matome-app .mfd label em{font-style:normal;color:#bbb;font-size:10px;display:block;}
+#matome-app .mfd .dv{padding:10px 0;border-bottom:1.5px dashed var(--border);font-size:15px;font-weight:600;color:#aaa;}
+#matome-app .mtotal{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--gold);border-radius:4px;padding:12px 16px;background:#fffdf7;margin-bottom:24px;flex-wrap:wrap;gap:6px;}
+#matome-app .mtotal .lbl{font-size:11px;color:var(--label);letter-spacing:1px;text-transform:uppercase;}
+#matome-app .mtotal .val{font-size:20px;font-weight:700;}
+#matome-app .mcalc{background:var(--dark);border-radius:6px;padding:24px 28px;margin-bottom:24px;}
+#matome-app .mcalc-t{font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;}
+#matome-app .mcalc-sl{font-size:11px;padding:8px 0 4px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
+#matome-app .mcalc-sl.a{color:var(--gold);}
+#matome-app .mcalc-sl.b{color:var(--blue);}
+#matome-app .ml{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;padding:5px 0;color:#ccc;gap:12px;}
+#matome-app .ml .ck{flex:1;}
+#matome-app .ml .cv{white-space:nowrap;font-size:15px;}
+#matome-app .ml .plus{color:#555;margin-right:8px;}
+#matome-app .ml.subt{border-top:1px dashed #3d3d3d;margin-top:6px;padding-top:10px;}
+#matome-app .ml.subt .ck{color:#bbb;font-size:13px;}
+#matome-app .ml.subt .cv{font-size:15px;}
+#matome-app .ml.pa{padding-top:4px;}
+#matome-app .ml.pa .ck{color:var(--gold-dim);font-size:12px;}
+#matome-app .ml.pa .cv{color:var(--gold);font-size:26px;font-weight:900;}
+#matome-app .ml.pb{padding-top:4px;}
+#matome-app .ml.pb .ck{color:var(--blue-dim);font-size:12px;}
+#matome-app .ml.pb .cv{color:var(--blue);font-size:26px;font-weight:900;}
+#matome-app .ml.tf{border-top:2px solid #555;margin-top:14px;padding-top:16px;}
+#matome-app .ml.tf .ck{color:#fff;font-weight:700;font-size:15px;letter-spacing:0.5px;}
+#matome-app .ml.tf .cv{color:var(--gold);font-size:34px;font-weight:900;}
+#matome-app .mcsep{border:none;border-top:1px solid #3a3a3a;margin:14px 0;}
+#matome-app .mbtn{width:100%;padding:14px;background:var(--dark);border:none;border-radius:4px;font-size:13px;font-weight:700;color:var(--gold);cursor:pointer;letter-spacing:3px;text-transform:uppercase;touch-action:manipulation;transition:background 0.15s;font-family:inherit;}
+#matome-app .mbtn:hover{background:#3d3d3d;}
+#matome-app .mbtn.sec{background:transparent;border:1px solid var(--border);color:var(--label);letter-spacing:1px;margin-bottom:10px;}
+#matome-app .mbtn.sec:hover{border-color:var(--dark);color:var(--dark);background:transparent;}
+#matome-app .mrg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+#matome-app .mrc{border-radius:4px;padding:14px;}
+#matome-app .mrc.before{background:var(--before-bg);border:1px solid var(--before-border);}
+#matome-app .mrc.after{background:var(--after-bg);border:1px solid var(--after-border);}
+#matome-app .mct{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid;}
+#matome-app .mrc.before .mct{color:var(--before-color);border-color:var(--before-border);}
+#matome-app .mrc.after .mct{color:var(--after-color);border-color:var(--after-border);}
+#matome-app .mrr{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;gap:4px;}
+#matome-app .mrr .ri{color:#555;flex:1;line-height:1.4;}
+#matome-app .mrr .ra{font-weight:600;white-space:nowrap;}
+#matome-app .mrr.tr{border-top:1px solid #ccc;margin-top:6px;padding-top:8px;font-weight:700;}
+#matome-app .mrr.note{font-size:10px;color:#999;font-style:italic;}
+#matome-app .mrr.zero .ra{color:var(--after-color);}
+#matome-app .mrr.ssep{border-top:1px dashed #ccc;margin-top:4px;padding-top:4px;}
+#matome-app .meco{background:var(--dark);border-radius:4px;padding:24px 16px;text-align:center;margin-bottom:20px;}
+#matome-app .meco .elbl{font-size:10px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+#matome-app .meco .ebig{font-size:32px;font-weight:900;color:var(--gold);line-height:1.2;}
+#matome-app .meco .esub{font-size:12px;color:#888;margin-top:10px;line-height:1.8;}
+#matome-app .mres{margin-bottom:20px;font-size:12px;color:#888;line-height:1.8;border:1px solid var(--divider);border-radius:4px;padding:12px 14px;}
+#matome-app .mpdfh{display:none;}
+#matome-app .mpdff{display:none;}
+@media(max-width:480px){
+  #matome-app .mh{padding:14px 16px;}
+  #matome-app .mh-logo{font-size:20px;letter-spacing:3px;}
+  #matome-app .mstep{font-size:9px;padding:10px 4px;}
+  #matome-app .mc{padding:20px 16px;}
+  #matome-app .mfg{grid-template-columns:1fr;gap:14px;}
+  #matome-app .mrg{grid-template-columns:1fr;}
+  #matome-app .meco .ebig{font-size:26px;}
+  #matome-app .mcalc{padding:16px;}
+  #matome-app .ml{font-size:13px;padding:4px 0;}
+  #matome-app .ml .cv{font-size:13px;}
+  #matome-app .ml.subt .cv{font-size:13px;}
+  #matome-app .ml.pa .cv{font-size:20px;}
+  #matome-app .ml.pb .cv{font-size:20px;}
+  #matome-app .ml.tf .cv{font-size:26px;}
+  #matome-app .ml.tf .ck{font-size:13px;}
+  #matome-app .mbtn{font-size:12px;letter-spacing:2px;}
+}
+@media(min-width:481px) and (max-width:768px){#matome-app .mrg{grid-template-columns:1fr;}}
+@media print{
+  @page{margin:15mm 20mm;size:A4 portrait;}
+  #matome-app .msteps,#matome-app .mh,#matome-app .mbtn,
+  #matome-app .mtela-1c,#matome-app .mtela-2c{display:none !important;}
+  #matome-app .mtela{display:block !important;}
+  #matome-app .mpdfh{display:block !important;border-bottom:3px solid #c9a84c;padding-bottom:14px;margin-bottom:22px;}
+  #matome-app .mpdfh .pl{font-size:22px;font-weight:300;letter-spacing:5px;text-transform:uppercase;color:#2d2d2d;}
+  #matome-app .mpdfh .pl strong{font-weight:900;color:#c9a84c;}
+  #matome-app .mpdfh .pt{font-size:9px;color:#888;letter-spacing:2px;margin-top:3px;}
+  #matome-app .mpdfh .pc{font-size:12px;color:#555;margin-top:8px;}
+  #matome-app .mrg{grid-template-columns:1fr 1fr !important;}
+  #matome-app .mcalc,#matome-app .meco,#matome-app .mrc.before,#matome-app .mrc.after,#matome-app .mbadge{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #matome-app .mcalc{background:#2d2d2d !important;}
+  #matome-app .meco{background:#2d2d2d !important;}
+  #matome-app .mpdff{display:block !important;margin-top:20px;font-size:9px;color:#bbb;text-align:center;border-top:1px solid #eee;padding-top:10px;}
+}
+</style>
+
+<div id="matome-app">
+  <div class="mh"><div class="mh-logo"><strong>MATOME</strong></div><div class="mh-tag">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div></div>
+  <div class="msteps">
+    <div class="mstep active" id="ms1">① Situação Atual</div>
+    <div class="mstep" id="ms2">② Proposta</div>
+    <div class="mstep" id="ms3">③ Resultado</div>
+  </div>
+
+  <!-- TELA 1 -->
+  <div class="mtela active" id="mt1">
+    <div class="mc mtela-1c">
+      <div class="msec">① Dados do cliente · お客様情報</div>
+      <div class="mfg">
+        <div class="mf"><label>Nome <em>お名前</em></label><input type="text" id="mn-nome" placeholder="Yamamoto Hiroshi" autocomplete="off"></div>
+        <div class="mf"><label>Idade <em>年齢</em></label><input type="number" id="mn-idade" placeholder="35" min="18" max="99" inputmode="numeric"></div>
+        <div class="mf mf-full"><label>Data da simulação <em>シミュレーション日</em></label><input type="date" id="mn-data"></div>
+      </div>
+      <div class="msec">Parcelas mensais atuais · 現在の月額支出</div>
+      <div class="mfg">
+        <div class="mf"><label>住宅ローン <em>Financiamento da casa</em></label><input type="text" id="mn-fin" data-myen inputmode="numeric" placeholder="¥ 90.000"></div>
+        <div class="mf"><label>リフォームローン <em>Empréstimo reforma</em></label><input type="text" id="mn-refl" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>車ローン <em>Carro</em></label><input type="text" id="mn-car" data-myen inputmode="numeric" placeholder="¥ 40.000"></div>
+        <div class="mf"><label>クレジット <em>Cartão de crédito</em></label><input type="text" id="mn-crt" data-myen inputmode="numeric" placeholder="¥ 30.000"></div>
+        <div class="mf"><label>電気代 <em>Conta de luz</em></label><input type="text" id="mn-luz" data-myen inputmode="numeric" placeholder="¥ 20.000"></div>
+        <div class="mf"><label>ガス代 <em>Conta de gás</em></label><input type="text" id="mn-gas" data-myen inputmode="numeric" placeholder="¥ 15.000"></div>
+        <div class="mf"><label>その他 1 <em>Outros 1</em></label><input type="text" id="mn-out" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>その他 2 <em>Outros 2</em></label><input type="text" id="mn-out2" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+      </div>
+      <div class="mtotal"><span class="lbl">Total mensal atual · 現在の月額合計</span><span class="val" id="mn-total">¥ 0</span></div>
+      <div class="msec">Saldo devedor · 残債合計</div>
+      <div class="mfg">
+        <div class="mf"><label>残債 住宅ローン <em>Saldo devedor casa</em></label><input type="text" id="mn-rcasa" data-myen inputmode="numeric" placeholder="¥ 15.000.000"></div>
+        <div class="mf"><label>残債 リフォームローン <em>Saldo emprést. reforma</em></label><input type="text" id="mn-rrefl" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>残債 車ローン <em>Saldo devedor carro</em></label><input type="text" id="mn-rcar" data-myen inputmode="numeric" placeholder="¥ 2.000.000"></div>
+        <div class="mf"><label>残債 クレジット <em>Saldo cartão</em></label><input type="text" id="mn-rcrt" data-myen inputmode="numeric" placeholder="¥ 500.000"></div>
+        <div class="mf"><label>その他ローン 1 <em>Outros empréstimos 1</em></label><input type="text" id="mn-rout" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>その他ローン 2 <em>Outros empréstimos 2</em></label><input type="text" id="mn-rout2" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+      </div>
+      <button class="mbtn" data-mact="t1">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- TELA 2 -->
+  <div class="mtela" id="mt2">
+    <div class="mc mtela-2c">
+      <span class="mbadge a">Parte A — 住宅ローン + Obras</span>
+      <div class="msec">Casa + Reforma / Solar / Obras · 住宅ローン条件</div>
+
+      <div class="mfg">
+        <div class="mfd"><label>残債 住宅ローン <em>Saldo casa (da Tela 1)</em></label><div class="dv" id="md-rcasa">¥ 0</div></div>
+        <div class="mfd"><label>残債 リフォームローン <em>Saldo emprést. reforma (da Tela 1)</em></label><div class="dv" id="md-rrefl">¥ 0</div></div>
+      </div>
+
+      <div class="mfg">
+        <div class="mf"><label>リフォーム <em>Reforma</em></label><input type="text" id="mn-ref" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>外構工事 <em>Área externa</em></label><input type="text" id="mn-ext" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>太陽光発電 <em>Painel solar</em></label><input type="text" id="mn-sol" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>その他工事 <em>Outras obras</em></label><input type="text" id="mn-oob" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+      </div>
+      <div class="mfg">
+        <div class="mf"><label>金利 Casa <em>Taxa de juros ao ano (%)</em></label><input type="number" id="mn-txcasa" value="0" min="0.1" max="20" step="0.01" inputmode="decimal"></div>
+        <div class="mf"><label>返済期間 Casa <em>Prazo em anos (máx. 50)</em></label><input type="number" id="mn-pzcasa" value="35" min="1" max="50" step="1" inputmode="numeric"></div>
+        <div class="mf"><label>太陽光発電 <em>Elimina conta de luz?</em></label>
+          <select id="mn-selim"><option value="1">✅ Sim — elimina luz</option><option value="0">❌ Não incluído</option></select>
+        </div>
+        <div class="mf"><label>オール電化 <em>Elimina conta de gás?</em></label>
+          <select id="mn-aelec"><option value="0">❌ Não incluído</option><option value="1">✅ Sim — elimina gás</option></select>
+        </div>
+      </div>
+
+      <span class="mbadge b">Parte B — まとめ融資 (Dívidas)</span>
+      <div class="msec b">Dívidas consolidadas · まとめ項目</div>
+      <div class="mfg">
+        <div class="mfd"><label>残債 車ローン <em>Saldo carro (da Tela 1)</em></label><div class="dv" id="md-rcar">¥ 0</div></div>
+        <div class="mfd"><label>残債 クレジット <em>Saldo cartão (da Tela 1)</em></label><div class="dv" id="md-rcrt">¥ 0</div></div>
+        <div class="mfd"><label>その他ローン 1 <em>Outros emprést. 1 (da Tela 1)</em></label><div class="dv" id="md-rout">¥ 0</div></div>
+        <div class="mfd"><label>その他ローン 2 <em>Outros emprést. 2 (da Tela 1)</em></label><div class="dv" id="md-rout2">¥ 0</div></div>
+      </div>
+      <div class="mfg">
+        <div class="mf"><label>金利 MATOME <em>Taxa de juros ao ano (%)</em></label><input type="number" id="mn-txmat" value="0" min="0.1" max="20" step="0.01" inputmode="decimal"></div>
+        <div class="mf"><label>返済期間 MATOME <em>Prazo em anos (máx. 50)</em></label><input type="number" id="mn-pzmat" value="10" min="1" max="50" step="1" inputmode="numeric"></div>
+      </div>
+
+      <div class="mcalc">
+        <div class="mcalc-t">Composição do novo financiamento · 融資総額（自動計算）</div>
+        <div class="mcalc-sl a">▸ Parte A — 住宅ローン + Obras</div>
+        <div class="ml"><span class="ck" style="padding-left:8px">残債 住宅ローン <em style="color:#555;font-size:10px">(casa)</em></span><span class="cv" id="mc-rcasa">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>残債 リフォームローン <em style="color:#555;font-size:10px">(emprést. reforma)</em></span><span class="cv" id="mc-rrefl">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>リフォーム <em style="color:#555;font-size:10px">(nova reforma)</em></span><span class="cv" id="mc-ref">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>外構工事 <em style="color:#555;font-size:10px">(área externa)</em></span><span class="cv" id="mc-ext">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>太陽光発電 <em style="color:#555;font-size:10px">(painel solar)</em></span><span class="cv" id="mc-sol">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>その他工事 <em style="color:#555;font-size:10px">(outras obras)</em></span><span class="cv" id="mc-oob">¥ 0</span></div>
+        <div class="ml subt"><span class="ck">Subtotal Parte A</span><span class="cv" id="mc-tota">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>Parte Burocrática <em style="color:#555;font-size:10px">(taxas banco + refin. + escrivão)</em></span><span class="cv" id="mc-buroc">¥ 0</span></div>
+        <div class="ml subt"><span class="ck">Total A (final)</span><span class="cv" id="mc-tota-final">¥ 0</span></div>
+        <div class="ml pa"><span class="ck" id="mc-lbla">Parcela A · 35 anos · 2,84%</span><span class="cv" id="mc-pmta">¥ 0</span></div>
+        <hr class="mcsep">
+        <div class="mcalc-sl b">▸ Parte B — まとめ融資 (Dívidas)</div>
+        <div class="ml"><span class="ck" style="padding-left:8px">残債 車ローン <em style="color:#555;font-size:10px">(carro)</em></span><span class="cv" id="mc-rcar">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>残債 クレジット <em style="color:#555;font-size:10px">(cartão)</em></span><span class="cv" id="mc-rcrt">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>その他ローン 1 <em style="color:#555;font-size:10px">(outros 1)</em></span><span class="cv" id="mc-rout">¥ 0</span></div>
+        <div class="ml"><span class="ck" style="padding-left:8px"><span class="plus">+</span>その他ローン 2 <em style="color:#555;font-size:10px">(outros 2)</em></span><span class="cv" id="mc-rout2">¥ 0</span></div>
+        <div class="ml subt"><span class="ck">Total Parte B</span><span class="cv" id="mc-totb">¥ 0</span></div>
+        <div class="ml pb"><span class="ck" id="mc-lblb">Parcela B · 10 anos · 3,29%</span><span class="cv" id="mc-pmtb">¥ 0</span></div>
+        <div class="ml tf"><span class="ck">NOVA PARCELA TOTAL · 新月額合計</span><span class="cv" id="mc-tott">¥ 0</span></div>
+      </div>
+
+      <button class="mbtn sec" data-mact="t2-back">← Voltar</button>
+      <button class="mbtn" data-mact="t2">Ver resultado →</button>
+    </div>
+  </div>
+
+  <!-- TELA 3 -->
+  <div class="mtela" id="mt3">
+    <div class="mpdfh mc"><div class="pl"><strong>MATOME</strong></div><div class="pt">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div><div class="pc" id="mn-pdfci"></div></div>
+    <div class="mc">
+      <div class="msec" id="mn-restit">③ Resultado</div>
+      <div class="mrg">
+        <div class="mrc before">
+          <div class="mct">❌ Situação Atual · 現状</div>
+          <div class="mrr"><span class="ri">住宅ローン <em style="font-size:10px;color:#aaa">(financiamento)</em></span><span class="ra" id="mr-fin">—</span></div>
+          <div class="mrr" id="mr-refl-row"><span class="ri">リフォームローン <em style="font-size:10px;color:#aaa">(empréstimo reforma)</em></span><span class="ra" id="mr-refl">—</span></div>
+          <div class="mrr"><span class="ri">車ローン <em style="font-size:10px;color:#aaa">(carro)</em></span><span class="ra" id="mr-car">—</span></div>
+          <div class="mrr"><span class="ri">クレジット <em style="font-size:10px;color:#aaa">(cartão)</em></span><span class="ra" id="mr-crt">—</span></div>
+          <div class="mrr"><span class="ri">電気代 <em style="font-size:10px;color:#aaa">(luz)</em></span><span class="ra" id="mr-luz">—</span></div>
+          <div class="mrr"><span class="ri">ガス代 <em style="font-size:10px;color:#aaa">(gás)</em></span><span class="ra" id="mr-gas">—</span></div>
+          <div class="mrr" id="mr-outrow"><span class="ri">その他 1 <em style="font-size:10px;color:#aaa">(outros 1)</em></span><span class="ra" id="mr-out">—</span></div>
+          <div class="mrr" id="mr-out2row"><span class="ri">その他 2 <em style="font-size:10px;color:#aaa">(outros 2)</em></span><span class="ra" id="mr-out2">—</span></div>
+          <div class="mrr tr"><span class="ri">TOTAL</span><span class="ra" id="mr-tantes" style="color:var(--before-color);font-size:15px">—</span></div>
+        </div>
+        <div class="mrc after">
+          <div class="mct">✅ Com MATOME · まとめ後</div>
+          <div class="mrr">
+            <span class="ri" style="color:var(--gold-dim)">Parte A · 住宅+Obras<em id="mr-lbla" style="font-size:10px;color:#aaa;display:block"></em></span>
+            <span class="ra" id="mr-pmta" style="color:var(--gold-dim)">—</span>
+          </div>
+          <div class="mrr ssep">
+            <span class="ri" style="color:var(--blue-dim)">Parte B · まとめ<em id="mr-lblb" style="font-size:10px;color:#aaa;display:block"></em></span>
+            <span class="ra" id="mr-pmtb" style="color:var(--blue-dim)">—</span>
+          </div>
+          <div class="mrr zero"><span class="ri">電気代 <em id="mr-sollbl" style="font-size:10px;color:#888"></em></span><span class="ra" id="mr-luz2">—</span></div>
+          <div class="mrr zero"><span class="ri">ガス代 <em id="mr-gaslbl" style="font-size:10px;color:#888"></em></span><span class="ra" id="mr-gas2" style="color:var(--after-color)">—</span></div>
+          <div class="mrr note"><span>車・クレジット・リフォームローン・その他ローン: まとめ に統合済<br><em style="font-size:10px">(carro, cartão, emprést. reforma e outros consolidados na Parte B)</em></span></div>
+          <div class="mrr tr"><span class="ri">TOTAL</span><span class="ra" id="mr-tdep" style="color:var(--after-color);font-size:15px">—</span></div>
+        </div>
+      </div>
+      <div class="meco">
+        <div class="elbl">Economia mensal · 月の節約額</div>
+        <div class="ebig" id="mn-eco">—</div>
+        <div class="esub" id="mn-ecosub">—</div>
+      </div>
+      <div class="mres" id="mn-resumo"></div>
+      <button class="mbtn sec" data-mact="t3-back">← Voltar</button>
+      <button class="mbtn" data-mact="pdf">📄 Gerar PDF personalizado</button>
+    </div>
+    <div class="mpdff mc">Simulação gerada pelo Simulador MATOME &nbsp;·&nbsp; Valores ilustrativos sujeitos à análise de crédito</div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var S={
+  nome:'',idade:'',data:'',
+  fin:0,refl:0,car:0,crt:0,luz:0,gas:0,out:0,out2:0,
+  rCasa:0,rRefl:0,rCar:0,rCrt:0,rOut:0,rOut2:0,
+  ref:0,ext:0,sol:0,oob:0,
+  txCasa:2.84,pzCasa:35,txMat:3.29,pzMat:10,
+  sElim:true,aDenka:false
+};
+function py(s){if(!s)return 0;return parseInt(String(s).replace(/[¥\s\.]/g,''),10)||0;}
+function fy(n){var v=Math.round(n);if(!v)return'¥ 0';return'¥ '+v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function mask(el){var r=py(el.value);el.value=r?fy(r):'';}
+function bindYen(cont){
+  cont.querySelectorAll('input[data-myen]').forEach(function(el){
+    el.addEventListener('input',function(){el.value=el.value.replace(/[^\d]/g,'');});
+    el.addEventListener('blur',function(){mask(el);});
+    el.addEventListener('focus',function(){var r=py(el.value);el.value=r||'';});
+  });
+}
+function pmt(p,ar,y){
+  if(!p||!y)return 0;
+  var r=ar/12/100,n=y*12;
+  if(r===0)return Math.round(p/n);
+  return Math.round(p*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1));
+}
+function goTo(n){
+  document.querySelectorAll('#matome-app .mtela').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('mt'+n).classList.add('active');
+  document.querySelectorAll('#matome-app .mstep').forEach(function(s,i){
+    s.classList.remove('active','done');
+    if(i+1<n)s.classList.add('done');
+    else if(i+1===n)s.classList.add('active');
+  });
+  var app=document.getElementById('matome-app');
+  if(app)app.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function g(id){return document.getElementById(id);}
+
+function lerT1(){
+  S.nome=g('mn-nome').value.trim();S.idade=g('mn-idade').value;S.data=g('mn-data').value;
+  S.fin=py(g('mn-fin').value);S.refl=py(g('mn-refl').value);S.car=py(g('mn-car').value);S.crt=py(g('mn-crt').value);
+  S.luz=py(g('mn-luz').value);S.gas=py(g('mn-gas').value);S.out=py(g('mn-out').value);S.out2=py(g('mn-out2').value);
+  S.rCasa=py(g('mn-rcasa').value);S.rRefl=py(g('mn-rrefl').value);S.rCar=py(g('mn-rcar').value);
+  S.rCrt=py(g('mn-rcrt').value);S.rOut=py(g('mn-rout').value);S.rOut2=py(g('mn-rout2').value);
+}
+function lerT2(){
+  S.ref=py(g('mn-ref').value);S.ext=py(g('mn-ext').value);
+  S.sol=py(g('mn-sol').value);S.oob=py(g('mn-oob').value);
+  S.txCasa=parseFloat(g('mn-txcasa').value)||0;S.pzCasa=parseInt(g('mn-pzcasa').value)||35;
+  S.txMat=parseFloat(g('mn-txmat').value)||0;S.pzMat=parseInt(g('mn-pzmat').value)||10;
+  S.sElim=g('mn-selim').value==='1';S.aDenka=g('mn-aelec').value==='1';
+}
+function atuTotal(){
+  var t=['mn-fin','mn-refl','mn-car','mn-crt','mn-luz','mn-gas','mn-out','mn-out2'].reduce(function(s,id){return s+py(g(id).value);},0);
+  g('mn-total').textContent=fy(t);
+}
+function atuCalc(){
+  lerT2();
+  var tABase=S.rCasa+S.rRefl+S.ref+S.ext+S.sol+S.oob;
+  var tB=S.rCar+S.rCrt+S.rOut+S.rOut2;
+  var gT=tABase+tB;
+  var buroc=Math.round(gT*0.022)+Math.max(330000,Math.round(gT*0.0165))+300000;
+  var tA=tABase+buroc;
+  var pA=pmt(tA,S.txCasa,S.pzCasa);
+  var pB=pmt(tB,S.txMat,S.pzMat);
+  var tc=S.txCasa.toFixed(2).replace('.',',');
+  var tm=S.txMat.toFixed(2).replace('.',',');
+  g('mc-rcasa').textContent=fy(S.rCasa);g('mc-rrefl').textContent=fy(S.rRefl);g('mc-ref').textContent=fy(S.ref);
+  g('mc-ext').textContent=fy(S.ext);g('mc-sol').textContent=fy(S.sol);
+  g('mc-oob').textContent=fy(S.oob);
+  g('mc-tota').textContent=fy(tABase);g('mc-buroc').textContent=fy(buroc);g('mc-tota-final').textContent=fy(tA);g('mc-pmta').textContent=fy(pA);
+  g('mc-lbla').textContent='Parcela A · '+S.pzCasa+' anos · '+tc+'%';
+  g('mc-rcar').textContent=fy(S.rCar);g('mc-rcrt').textContent=fy(S.rCrt);
+  g('mc-rout').textContent=fy(S.rOut);g('mc-rout2').textContent=fy(S.rOut2);
+  g('mc-totb').textContent=fy(tB);g('mc-pmtb').textContent=fy(pB);
+  g('mc-lblb').textContent='Parcela B · '+S.pzMat+' anos · '+tm+'%';
+  g('mc-tott').textContent=fy(pA+pB);
+}
+function renderT3(){
+  var tAntes=S.fin+S.refl+S.car+S.crt+S.luz+S.gas+S.out+S.out2;
+  var tABase=S.rCasa+S.rRefl+S.ref+S.ext+S.sol+S.oob;
+  var tB=S.rCar+S.rCrt+S.rOut+S.rOut2;
+  var gT=tABase+tB;
+  var buroc=Math.round(gT*0.022)+Math.max(330000,Math.round(gT*0.0165))+300000;
+  var tA=tABase+buroc;
+  var pA=pmt(tA,S.txCasa,S.pzCasa);
+  var pB=pmt(tB,S.txMat,S.pzMat);
+  var lD=S.sElim?0:S.luz;var gD=S.aDenka?0:S.gas;
+  var tDep=pA+pB+lD+gD;var eco=tAntes-tDep;
+  var tc=S.txCasa.toFixed(2).replace('.',',');
+  var tm=S.txMat.toFixed(2).replace('.',',');
+  var nL=S.nome?' · '+S.nome:'';var iL=S.idade?', '+S.idade+' anos':'';
+  g('mn-restit').textContent='③ Resultado'+nL+iL;
+  g('mr-fin').textContent=fy(S.fin);
+  var rlRow=g('mr-refl-row');
+  if(S.refl>0){g('mr-refl').textContent=fy(S.refl);rlRow.style.display='';}else rlRow.style.display='none';
+  g('mr-car').textContent=fy(S.car);
+  g('mr-crt').textContent=fy(S.crt);g('mr-luz').textContent=fy(S.luz);
+  g('mr-gas').textContent=fy(S.gas);
+  var oRow=g('mr-outrow');
+  if(S.out>0){g('mr-out').textContent=fy(S.out);oRow.style.display='';}else oRow.style.display='none';
+  var o2Row=g('mr-out2row');
+  if(S.out2>0){g('mr-out2').textContent=fy(S.out2);o2Row.style.display='';}else o2Row.style.display='none';
+  g('mr-tantes').textContent=fy(tAntes);
+  g('mr-lbla').textContent=S.pzCasa+' anos · '+tc+'%';g('mr-pmta').textContent=fy(pA);
+  g('mr-lblb').textContent=S.pzMat+' anos · '+tm+'%';g('mr-pmtb').textContent=fy(pB);
+  g('mr-sollbl').textContent=S.sElim?'(painel solar)':'';g('mr-luz2').textContent=fy(lD);
+  g('mr-gaslbl').textContent=S.aDenka?'(all-electric)':'';g('mr-gas2').textContent=fy(gD);
+  g('mr-tdep').textContent=fy(tDep);
+  g('mn-eco').textContent=fy(eco)+' / mês';
+  g('mn-ecosub').innerHTML=fy(eco*12)+' por ano<br>'+fy(eco*120)+' em 10 anos';
+  var dF=S.data?new Date(S.data+'T12:00').toLocaleDateString('pt-BR'):'—';
+  var ex=[S.ref>0?'Reforma: '+fy(S.ref):'',S.ext>0?'Área ext.: '+fy(S.ext):'',
+    S.sol>0?'Solar: '+fy(S.sol):'',S.oob>0?'Outros: '+fy(S.oob):'']
+    .filter(Boolean).join(' | ');
+  g('mn-resumo').innerHTML=
+    '<strong>Proposta MATOME</strong> · '+dF+'<br>'+
+    '<span style="color:var(--gold-dim)">Parte A (Casa+Obras):</span> '+fy(tA)+' · '+S.pzCasa+' anos · '+tc+'% → <strong>'+fy(pA)+'/mês</strong>'+(ex?' <em style="color:#aaa">('+ex+')</em>':'')+'<br>'+
+    '<span style="color:var(--blue-dim)">Parte B (Dívidas):</span> '+fy(tB)+' · '+S.pzMat+' anos · '+tm+'% → <strong>'+fy(pB)+'/mês</strong>';
+  g('mn-pdfci').textContent=[S.nome,S.idade?S.idade+' anos':'','Simulação: '+dF].filter(Boolean).join(' · ');
+}
+function init(){
+  g('mn-data').value=new Date().toISOString().split('T')[0];
+  bindYen(g('mt1'));bindYen(g('mt2'));
+  ['mn-fin','mn-refl','mn-car','mn-crt','mn-luz','mn-gas','mn-out','mn-out2'].forEach(function(id){
+    g(id).addEventListener('input',atuTotal);g(id).addEventListener('blur',atuTotal);
+  });
+  ['mn-ref','mn-ext','mn-sol','mn-oob'].forEach(function(id){
+    g(id).addEventListener('input',atuCalc);g(id).addEventListener('blur',atuCalc);
+  });
+  ['mn-txcasa','mn-txmat','mn-pzcasa','mn-pzmat'].forEach(function(id){g(id).addEventListener('input',atuCalc);});
+  ['mn-selim','mn-aelec'].forEach(function(id){g(id).addEventListener('change',atuCalc);});
+  document.getElementById('matome-app').addEventListener('click',function(e){
+    var btn=e.target.closest('[data-mact]');if(!btn)return;e.preventDefault();
+    var a=btn.getAttribute('data-mact');
+    if(a==='t1'){lerT1();g('md-rcasa').textContent=fy(S.rCasa)||'¥ 0';g('md-rrefl').textContent=fy(S.rRefl)||'¥ 0';g('md-rcar').textContent=fy(S.rCar)||'¥ 0';g('md-rcrt').textContent=fy(S.rCrt)||'¥ 0';g('md-rout').textContent=fy(S.rOut)||'¥ 0';g('md-rout2').textContent=fy(S.rOut2)||'¥ 0';goTo(2);atuCalc();}
+    if(a==='t2-back'){goTo(1);}
+    if(a==='t2'){lerT1();lerT2();renderT3();goTo(3);}
+    if(a==='t3-back'){goTo(2);}
+    if(a==='pdf'){
+      lerT1();lerT2();
+      var tABase=S.rCasa+S.rRefl+S.ref+S.ext+S.sol+S.oob;
+      var tB=S.rCar+S.rCrt+S.rOut+S.rOut2;
+      var gT=tABase+tB;
+      var buroc=Math.round(gT*0.022)+Math.max(330000,Math.round(gT*0.0165))+300000;
+      var tA=tABase+buroc;
+      var pA=pmt(tA,S.txCasa,S.pzCasa);
+      var pB=pmt(tB,S.txMat,S.pzMat);
+      var tAntes=S.fin+S.refl+S.car+S.crt+S.luz+S.gas+S.out+S.out2;
+      var lD=S.sElim?0:S.luz;var gD=S.aDenka?0:S.gas;
+      var tDep=pA+pB+lD+gD;var eco=tAntes-tDep;
+      var dF=S.data?new Date(S.data+'T12:00').toLocaleDateString('pt-BR'):'';
+      var dados={
+        nome:S.nome,idade:S.idade,data:dF,
+        fin:S.fin,refl:S.refl,car:S.car,crt:S.crt,luz:S.luz,gas:S.gas,out:S.out,out2:S.out2,
+        ref:S.ref,ext:S.ext,sol:S.sol,oob:S.oob,
+        pmt_a:pA,pmt_b:pB,eco_mensal:eco,
+        anos_a:S.pzCasa,taxa_a:S.txCasa,anos_b:S.pzMat,taxa_b:S.txMat,
+        total_a:tA,total_b:tB
+      };
+      var btn=btn||e.target.closest('[data-mact="pdf"]');
+      if(btn){btn.disabled=true;btn.textContent='⏳ Gerando...';}
+      fetch('https://matome-api.onrender.com/api/gerar-pdf',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(dados)
+      })
+      .then(function(r){if(!r.ok)throw new Error('Erro ao gerar PDF');return r.blob();})
+      .then(function(blob){
+        var url=window.URL.createObjectURL(blob);
+        var a=document.createElement('a');a.href=url;
+        a.download='MATOME-'+(S.nome||'simulacao').replace(/\s+/g,'_')+'.pdf';
+        document.body.appendChild(a);a.click();
+        window.URL.revokeObjectURL(url);a.remove();
+      })
+      .catch(function(err){
+        alert('Erro: '+err.message+'\n\nCertifique-se de que o servidor está rodando.');
+        console.error(err);
+      })
+      .finally(function(){if(btn){btn.disabled=false;btn.textContent='📄 Gerar PDF personalizado';}});
+    }
+  });
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();
+</script>

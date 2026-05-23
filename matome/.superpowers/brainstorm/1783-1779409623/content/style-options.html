@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATOME — Estilos Visuais</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; padding: 24px; }
+
+  h1 { text-align: center; font-size: 18px; color: #aaa; margin-bottom: 24px; font-weight: 400; }
+  h1 span { color: #fff; font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+  /* ── CARD WRAPPER ── */
+  .card-wrap {
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    border: 3px solid transparent; transition: border 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .card-wrap:hover { transform: translateY(-4px); }
+  .card-wrap.selected { border-color: #fff; }
+  .card-wrap.selected::after {
+    content: '✓ Selecionado';
+    position: absolute; top: 10px; right: 10px;
+    background: #fff; color: #222; font-size: 12px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  .style-label {
+    text-align: center; font-size: 13px; color: #aaa; margin-top: 10px; padding: 4px;
+  }
+  .style-label strong { color: #fff; font-size: 15px; display: block; margin-bottom: 2px; }
+
+  /* ═══════════════════════════════════════
+     ESTILO A — Moderno / Corporativo
+  ═══════════════════════════════════════ */
+  .a { background: #f5f7fa; color: #1a1a2e; }
+  .a-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 18px 20px; display: flex; align-items: center; gap: 12px;
+  }
+  .a-header .logo { font-size: 22px; font-weight: 900; color: #00e5a0; letter-spacing: -1px; }
+  .a-header .logo span { color: #fff; }
+  .a-header .sub { font-size: 11px; color: #8899bb; }
+  .a-body { padding: 16px; }
+  .a-field { margin-bottom: 12px; }
+  .a-field label { font-size: 11px; font-weight: 700; color: #8899bb; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .a-field input { width: 100%; padding: 9px 12px; border: 1.5px solid #e0e4ec; border-radius: 8px; font-size: 14px; color: #1a1a2e; background: #fff; }
+  .a-field input:focus { outline: none; border-color: #00e5a0; }
+  .a-total { background: #f0faf6; border-left: 4px solid #00c17c; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 4px; }
+  .a-total .val { font-size: 20px; font-weight: 800; color: #00a066; }
+  .a-total .lbl { font-size: 11px; color: #888; }
+  .a-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #00c17c, #00e5a0); border: none; border-radius: 8px; font-weight: 800; font-size: 14px; color: #0a2e1e; cursor: pointer; margin-top: 10px; }
+
+  /* ═══════════════════════════════════════
+     ESTILO B — Impactante / Marketing
+  ═══════════════════════════════════════ */
+  .b { background: #fff; color: #111; }
+  .b-header {
+    background: #e63946; padding: 18px 20px; position: relative; overflow: hidden;
+  }
+  .b-header::before {
+    content: 'まとめ'; position: absolute; right: -10px; top: -10px;
+    font-size: 80px; opacity: 0.08; font-weight: 900; color: #fff; line-height: 1;
+  }
+  .b-header .logo { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -1px; }
+  .b-header .logo em { font-style: normal; color: #ffd166; }
+  .b-header .sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .b-body { padding: 16px; }
+  .b-badge { display: inline-block; background: #e63946; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+  .b-field { margin-bottom: 10px; }
+  .b-field label { font-size: 11px; font-weight: 700; color: #555; display: block; margin-bottom: 3px; }
+  .b-field input { width: 100%; padding: 9px 12px; border: 2px solid #eee; border-radius: 6px; font-size: 14px; font-weight: 700; }
+  .b-field input:focus { outline: none; border-color: #e63946; }
+  .b-total { text-align: center; background: #fff5f5; border: 2px solid #e63946; border-radius: 8px; padding: 10px; margin-top: 8px; }
+  .b-total .val { font-size: 22px; font-weight: 900; color: #e63946; }
+  .b-total .lbl { font-size: 11px; color: #888; }
+  .b-btn { width: 100%; padding: 12px; background: #e63946; border: none; border-radius: 8px; font-weight: 900; font-size: 14px; color: #fff; cursor: pointer; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ═══════════════════════════════════════
+     ESTILO C — Elegante / Japonês
+  ═══════════════════════════════════════ */
+  .c { background: #fafaf8; color: #2d2d2d; }
+  .c-header {
+    background: #2d2d2d; padding: 18px 20px;
+    border-bottom: 3px solid #c9a84c;
+  }
+  .c-header .logo { font-size: 22px; font-weight: 300; color: #fff; letter-spacing: 4px; text-transform: uppercase; }
+  .c-header .logo strong { font-weight: 900; color: #c9a84c; }
+  .c-header .sub { font-size: 10px; color: #999; margin-top: 3px; letter-spacing: 2px; }
+  .c-body { padding: 16px; }
+  .c-divider { height: 1px; background: #e8e0d0; margin: 12px 0; }
+  .c-field { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .c-field label { font-size: 11px; color: #999; width: 110px; flex-shrink: 0; }
+  .c-field input { flex: 1; padding: 7px 10px; border: none; border-bottom: 1.5px solid #d0c8b8; background: transparent; font-size: 14px; font-weight: 600; color: #2d2d2d; text-align: right; }
+  .c-field input:focus { outline: none; border-bottom-color: #c9a84c; }
+  .c-total { border: 1px solid #c9a84c; border-radius: 4px; padding: 10px 14px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .c-total .val { font-size: 20px; font-weight: 700; color: #2d2d2d; }
+  .c-total .lbl { font-size: 11px; color: #999; }
+  .c-btn { width: 100%; padding: 11px; background: #2d2d2d; border: none; border-radius: 4px; font-weight: 600; font-size: 13px; color: #c9a84c; cursor: pointer; margin-top: 10px; letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<h1><span>Escolha o estilo visual</span> do Simulador MATOME</h1>
+
+<div class="grid">
+
+  <!-- ESTILO A -->
+  <div>
+    <div class="card-wrap" onclick="this.classList.toggle('selected')">
+      <div class="a">
+        <div class="a-header">
+          <div>
+            <div class="logo"><span>MA</span>TOME</div>
+            <div class="sub">まとめ · Solucionando sua dívida no Japão 🇯🇵</div>
+          </div>
+        </div>
+        <div class="a-body">
+          <div class="a-field">
+            <label>住宅ローン (Financiamento)</label>
+            <input value="¥ 90.000" readonly>
+          </div>
+          <div class="a-field">
+            <label>車ローン (Carro)</label>
+            <input value="¥ 40.000" readonly>
+          </div>
+          <div class="a-field">
+            <label>クレジット (Cartão)</label>
+            <input value="¥ 30.000" readonly>
+          </div>
+          <div class="a-total">
+            <div class="lbl">Total atual</div>
+            <div class="val">¥ 195.000 / mês</div>
+          </div>
+          <button class="a-btn">Próximo →</button>
+        </div>
+      </div>
+    </div>
+    <div class="style-label"><strong>A — Moderno / Corporativo</strong>Verde escuro, clean, sério</div>
+  </div>
+
+  <!-- ESTILO B -->
+  <div>
+    <div class="card-wrap" onclick="this.classList.toggle('selected')">
+      <div class="b">
+        <div class="b-header">
+          <div class="logo"><em>MA</em>TOME</div>
+          <div class="sub">まとめ · Solucionando sua dívida no Japão 🇯🇵</div>
+        </div>
+        <div class="b-body">
+          <span class="b-badge">Situação atual</span>
+          <div class="b-field">
+            <label>住宅ローン (Financiamento)</label>
+            <input value="¥ 90.000" readonly>
+          </div>
+          <div class="b-field">
+            <label>車ローン (Carro)</label>
+            <input value="¥ 40.000" readonly>
+          </div>
+          <div class="b-field">
+            <label>クレジット (Cartão)</label>
+            <input value="¥ 30.000" readonly>
+          </div>
+          <div class="b-total">
+            <div class="lbl">Total atual</div>
+            <div class="val">¥ 195.000 / mês</div>
+          </div>
+          <button class="b-btn">Próximo →</button>
+        </div>
+      </div>
+    </div>
+    <div class="style-label"><strong>B — Impactante / Marketing</strong>Vermelho forte, bold, chamativo</div>
+  </div>
+
+  <!-- ESTILO C -->
+  <div>
+    <div class="card-wrap" onclick="this.classList.toggle('selected')">
+      <div class="c">
+        <div class="c-header">
+          <div class="logo"><strong>MATOME</strong></div>
+          <div class="sub">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO</div>
+        </div>
+        <div class="c-body">
+          <div class="c-field">
+            <label>住宅ローン</label>
+            <input value="¥ 90.000" readonly>
+          </div>
+          <div class="c-divider"></div>
+          <div class="c-field">
+            <label>車ローン</label>
+            <input value="¥ 40.000" readonly>
+          </div>
+          <div class="c-divider"></div>
+          <div class="c-field">
+            <label>クレジット</label>
+            <input value="¥ 30.000" readonly>
+          </div>
+          <div class="c-total">
+            <div class="lbl">Total atual</div>
+            <div class="val">¥ 195.000 / mês</div>
+          </div>
+          <button class="c-btn">Próximo →</button>
+        </div>
+      </div>
+    </div>
+    <div class="style-label"><strong>C — Elegante / Japonês</strong>Preto e dourado, minimalista, premium</div>
+  </div>
+
+</div>
+
+<p style="text-align:center;color:#666;font-size:13px;margin-top:24px">Clique em um card para selecionar · Pode selecionar mais de um para misturar elementos</p>
+
+<script src="http://localhost:50456/__helper.js"></script>
+<script>
+document.querySelectorAll('.card-wrap').forEach((card, i) => {
+  card.addEventListener('click', () => {
+    const letters = ['a','b','c'];
+    const selected = card.classList.contains('selected');
+    if (typeof recordChoice === 'function') {
+      recordChoice(letters[i], card.querySelector('.style-label strong').textContent);
+    }
+  });
+});
+</script>
+</body>
+</html>

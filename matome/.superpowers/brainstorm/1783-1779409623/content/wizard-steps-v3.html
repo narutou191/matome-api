@@ -1,0 +1,137 @@
+<h2>Simulador MATOME — v3 (apenas casa própria)</h2>
+<p class="subtitle">Fluxo simplificado · confirme os campos finais</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Tela 1 de 3 — Dados do Cliente + Situação Atual</div>
+    <div class="mockup-body" style="padding:16px;display:grid;gap:14px">
+      <div style="background:#f0f4ff;border-radius:8px;padding:12px">
+        <div class="label" style="margin-bottom:8px">👤 Dados do Cliente (お客様情報)</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
+          <div>
+            <div class="label">Nome (お名前)</div>
+            <input class="mock-input" placeholder="Yamamoto Hiroshi">
+          </div>
+          <div>
+            <div class="label">Idade (年齢)</div>
+            <input class="mock-input" placeholder="35 anos">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="label" style="margin-bottom:8px">💴 Despesas mensais atuais (現在の月額支出)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div class="label">住宅ローン (Financiamento)</div>
+            <input class="mock-input" placeholder="¥ 90.000">
+          </div>
+          <div>
+            <div class="label">車ローン (Carro)</div>
+            <input class="mock-input" placeholder="¥ 40.000">
+          </div>
+          <div>
+            <div class="label">クレジット (Cartão)</div>
+            <input class="mock-input" placeholder="¥ 30.000">
+          </div>
+          <div>
+            <div class="label">電気代 (Luz)</div>
+            <input class="mock-input" placeholder="¥ 20.000">
+          </div>
+          <div>
+            <div class="label">ガス代 (Gás)</div>
+            <input class="mock-input" placeholder="¥ 15.000">
+          </div>
+          <div>
+            <div class="label">その他 (Outros)</div>
+            <input class="mock-input" placeholder="¥ 0">
+          </div>
+        </div>
+      </div>
+      <button class="mock-button">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Tela 2 de 3 — Proposta MATOME (まとめプラン)</div>
+    <div class="mockup-body" style="padding:16px;display:grid;gap:10px">
+      <p style="color:#888;font-size:13px;margin:0">Corretor preenche a proposta de consolidação</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="label">Nova parcela roukin (新ローン月額)</div>
+          <input class="mock-input" placeholder="¥ 130.000">
+        </div>
+        <div>
+          <div class="label">Reforma incluída (リフォーム)</div>
+          <input class="mock-input" placeholder="¥ 0">
+        </div>
+        <div>
+          <div class="label">Área externa (外構工事)</div>
+          <input class="mock-input" placeholder="¥ 0">
+        </div>
+        <div></div>
+        <div>
+          <div class="label">Painel solar (太陽光発電)</div>
+          <select class="mock-input">
+            <option>✅ Sim — elimina conta de luz</option>
+            <option>❌ Não incluído</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">All-electric (オール電化)</div>
+          <select class="mock-input">
+            <option>✅ Sim — elimina gás</option>
+            <option>❌ Não incluído</option>
+          </select>
+        </div>
+      </div>
+      <button class="mock-button">Ver resultado →</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Tela 3 de 3 — Resultado · Yamamoto Hiroshi, 35 anos</div>
+    <div class="mockup-body" style="padding:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="background:#fff0f0;border-radius:8px;padding:12px">
+          <div class="label" style="color:#c00">❌ Situação Atual (現状)</div>
+          <table style="width:100%;font-size:13px;margin-top:8px;border-collapse:collapse">
+            <tr><td style="padding:3px 0">住宅ローン (Financiamento)</td><td style="text-align:right">¥ 90.000</td></tr>
+            <tr><td style="padding:3px 0">車ローン (Carro)</td><td style="text-align:right">¥ 40.000</td></tr>
+            <tr><td style="padding:3px 0">クレジット (Cartão)</td><td style="text-align:right">¥ 30.000</td></tr>
+            <tr><td style="padding:3px 0">電気代 (Luz)</td><td style="text-align:right">¥ 20.000</td></tr>
+            <tr><td style="padding:3px 0">ガス代 (Gás)</td><td style="text-align:right">¥ 15.000</td></tr>
+            <tr style="font-weight:bold;border-top:2px solid #ddd;padding-top:4px">
+              <td style="padding-top:6px">TOTAL</td>
+              <td style="text-align:right;padding-top:6px;font-size:16px;color:#c00">¥ 195.000</td>
+            </tr>
+          </table>
+        </div>
+        <div style="background:#f0fff0;border-radius:8px;padding:12px">
+          <div class="label" style="color:#060">✅ Com MATOME (まとめ後)</div>
+          <table style="width:100%;font-size:13px;margin-top:8px;border-collapse:collapse">
+            <tr><td style="padding:3px 0">新ローン (consolidado)</td><td style="text-align:right">¥ 130.000</td></tr>
+            <tr><td style="padding:3px 0">電気代 (painel solar)</td><td style="text-align:right;color:#060">¥ 0</td></tr>
+            <tr><td style="padding:3px 0">ガス代 (all-electric)</td><td style="text-align:right;color:#060">¥ 0</td></tr>
+            <tr><td colspan="2" style="font-size:11px;color:#888;font-style:italic;padding:3px 0">車・クレジット: roukin に統合済</td></tr>
+            <tr style="font-weight:bold;border-top:2px solid #ddd">
+              <td style="padding-top:6px">TOTAL</td>
+              <td style="text-align:right;padding-top:6px;font-size:16px;color:#060">¥ 130.000</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:#e6f7e6;border-radius:8px;padding:16px;text-align:center;margin-bottom:14px">
+        <div style="font-size:28px;font-weight:bold;color:#060">Economia: ¥ 65.000 / mês</div>
+        <div style="color:#444;font-size:13px;margin-top:4px">¥ 780.000 por ano &nbsp;·&nbsp; ¥ 7.800.000 em 10 anos</div>
+      </div>
+
+      <button class="mock-button" style="width:100%;padding:14px;font-size:16px">📄 Gerar PDF personalizado</button>
+    </div>
+  </div>
+</div>

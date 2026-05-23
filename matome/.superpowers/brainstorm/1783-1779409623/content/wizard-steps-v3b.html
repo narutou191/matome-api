@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATOME — Simulador</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f3ef; color: #2d2d2d; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .header {
+    background: #2d2d2d;
+    border-bottom: 3px solid #c9a84c;
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { font-size: 26px; font-weight: 300; color: #fff; letter-spacing: 6px; text-transform: uppercase; }
+  .logo strong { font-weight: 900; color: #c9a84c; }
+  .tagline { font-size: 11px; color: #888; letter-spacing: 2px; margin-top: 3px; }
+
+  /* ── STEPS ── */
+  .steps { display: flex; gap: 0; border-bottom: 1px solid #e0d8c8; background: #fff; }
+  .step {
+    flex: 1; padding: 14px 20px; text-align: center;
+    font-size: 12px; color: #aaa; border-bottom: 3px solid transparent;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .step.active { color: #2d2d2d; border-bottom-color: #c9a84c; font-weight: 700; }
+  .step.done { color: #c9a84c; }
+
+  /* ── CONTAINER ── */
+  .container { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+
+  /* ── SECTION TITLE ── */
+  .sec-title {
+    font-size: 11px; font-weight: 700; color: #c9a84c;
+    letter-spacing: 2px; text-transform: uppercase;
+    border-bottom: 1px solid #e0d8c8; padding-bottom: 8px; margin-bottom: 20px;
+  }
+
+  /* ── FIELDS ── */
+  .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label {
+    font-size: 11px; color: #888; letter-spacing: 0.5px;
+  }
+  .field label em { font-style: normal; color: #bbb; font-size: 10px; }
+  .field input, .field select {
+    padding: 10px 12px;
+    border: none; border-bottom: 1.5px solid #d0c8b8;
+    background: transparent; font-size: 15px; font-weight: 600; color: #2d2d2d;
+    border-radius: 0;
+  }
+  .field input:focus, .field select:focus {
+    outline: none; border-bottom-color: #c9a84c;
+  }
+  .field select { cursor: pointer; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: #e0d8c8; margin: 4px 0 20px; }
+
+  /* ── TOTAL BOX ── */
+  .total-box {
+    border: 1px solid #c9a84c; border-radius: 4px;
+    padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; background: #fffdf7;
+  }
+  .total-box .lbl { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
+  .total-box .val { font-size: 22px; font-weight: 700; color: #2d2d2d; }
+
+  /* ── BUTTON ── */
+  .btn {
+    width: 100%; padding: 14px; background: #2d2d2d; border: none;
+    border-radius: 4px; font-size: 13px; font-weight: 700; color: #c9a84c;
+    cursor: pointer; letter-spacing: 3px; text-transform: uppercase;
+  }
+  .btn:hover { background: #3d3d3d; }
+
+  /* ── RESULTADO ── */
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .result-col { border-radius: 4px; padding: 16px; }
+  .result-col.before { background: #fff5f5; border: 1px solid #f0c0c0; }
+  .result-col.after  { background: #f5fff8; border: 1px solid #a0d8b0; }
+  .result-col .col-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid;
+  }
+  .result-col.before .col-title { color: #c00; border-color: #f0c0c0; }
+  .result-col.after  .col-title { color: #060; border-color: #a0d8b0; }
+  .result-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+  .result-row .item { color: #555; }
+  .result-row .amount { font-weight: 600; }
+  .result-row.total-row { border-top: 1px solid #ccc; margin-top: 6px; padding-top: 8px; }
+  .result-row.total-row .item { font-weight: 700; color: #2d2d2d; }
+  .result-row.total-row.before .amount { font-size: 16px; color: #c00; font-weight: 800; }
+  .result-row.total-row.after  .amount { font-size: 16px; color: #060; font-weight: 800; }
+  .result-row.note { font-size: 11px; color: #999; font-style: italic; }
+
+  .economia-box {
+    background: #2d2d2d; border-radius: 4px; padding: 20px;
+    text-align: center; margin-bottom: 20px;
+  }
+  .economia-box .label { font-size: 11px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .economia-box .value { font-size: 32px; font-weight: 900; color: #c9a84c; }
+  .economia-box .sub { font-size: 12px; color: #aaa; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo"><strong>MATOME</strong></div>
+    <div class="tagline">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div>
+  </div>
+</div>
+
+<div class="steps">
+  <div class="step done">① Situação Atual</div>
+  <div class="step done">② Proposta MATOME</div>
+  <div class="step active">③ Resultado</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TELA 1 — Situação Atual
+════════════════════════════════════════ -->
+<div class="container" id="tela1">
+  <div class="sec-title">① Dados do cliente · お客様情報</div>
+  <div class="field-group">
+    <div class="field">
+      <label>Nome <em>お名前</em></label>
+      <input type="text" placeholder="Yamamoto Hiroshi">
+    </div>
+    <div class="field">
+      <label>Idade <em>年齢</em></label>
+      <input type="number" placeholder="35">
+    </div>
+  </div>
+
+  <div class="sec-title">Despesas mensais atuais · 現在の月額支出</div>
+  <div class="field-group">
+    <div class="field">
+      <label>住宅ローン <em>Financiamento da casa</em></label>
+      <input type="text" placeholder="¥ 90.000">
+    </div>
+    <div class="field">
+      <label>車ローン <em>Carro</em></label>
+      <input type="text" placeholder="¥ 40.000">
+    </div>
+    <div class="field">
+      <label>クレジット <em>Cartão de crédito</em></label>
+      <input type="text" placeholder="¥ 30.000">
+    </div>
+    <div class="field">
+      <label>電気代 <em>Conta de luz</em></label>
+      <input type="text" placeholder="¥ 20.000">
+    </div>
+    <div class="field">
+      <label>ガス代 <em>Conta de gás</em></label>
+      <input type="text" placeholder="¥ 15.000">
+    </div>
+    <div class="field">
+      <label>その他 <em>Outros</em></label>
+      <input type="text" placeholder="¥ 0">
+    </div>
+  </div>
+  <button class="btn">Próximo →</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     TELA 2 — Proposta MATOME
+════════════════════════════════════════ -->
+<div class="container" id="tela2">
+  <div class="sec-title">② Proposta MATOME · まとめプラン</div>
+  <div class="field-group">
+    <div class="field">
+      <label>新ローン月額 <em>Nova parcela roukin</em></label>
+      <input type="text" placeholder="¥ 130.000">
+    </div>
+    <div class="field">
+      <label>リフォーム <em>Reforma incluída</em></label>
+      <input type="text" placeholder="¥ 0">
+    </div>
+    <div class="field">
+      <label>外構工事 <em>Área externa</em></label>
+      <input type="text" placeholder="¥ 0">
+    </div>
+    <div class="field"></div>
+    <div class="field">
+      <label>太陽光発電 <em>Painel solar</em></label>
+      <select>
+        <option>✅ Sim — elimina luz</option>
+        <option>❌ Não incluído</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>オール電化 <em>All-electric</em></label>
+      <select>
+        <option>✅ Sim — elimina gás</option>
+        <option>❌ Não incluído</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn">Ver resultado →</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     TELA 3 — Resultado
+════════════════════════════════════════ -->
+<div class="container" id="tela3">
+  <div class="sec-title">③ Resultado · Yamamoto Hiroshi · 35 anos</div>
+
+  <div class="result-grid">
+    <div class="result-col before">
+      <div class="col-title">❌ Situação Atual · 現状</div>
+      <div class="result-row"><span class="item">住宅ローン</span><span class="amount">¥ 90.000</span></div>
+      <div class="result-row"><span class="item">車ローン</span><span class="amount">¥ 40.000</span></div>
+      <div class="result-row"><span class="item">クレジット</span><span class="amount">¥ 30.000</span></div>
+      <div class="result-row"><span class="item">電気代</span><span class="amount">¥ 20.000</span></div>
+      <div class="result-row"><span class="item">ガス代</span><span class="amount">¥ 15.000</span></div>
+      <div class="result-row total-row before"><span class="item">TOTAL</span><span class="amount">¥ 195.000</span></div>
+    </div>
+    <div class="result-col after">
+      <div class="col-title">✅ Com MATOME · まとめ後</div>
+      <div class="result-row"><span class="item">新ローン</span><span class="amount">¥ 130.000</span></div>
+      <div class="result-row"><span class="item">電気代</span><span class="amount" style="color:#060">¥ 0</span></div>
+      <div class="result-row"><span class="item">ガス代</span><span class="amount" style="color:#060">¥ 0</span></div>
+      <div class="result-row note"><span>車・クレジット: roukin に統合済</span></div>
+      <div class="result-row total-row after"><span class="item">TOTAL</span><span class="amount">¥ 130.000</span></div>
+    </div>
+  </div>
+
+  <div class="economia-box">
+    <div class="label">Economia mensal · 月の節約</div>
+    <div class="value">¥ 65.000 / mês</div>
+    <div class="sub">¥ 780.000 por ano &nbsp;·&nbsp; ¥ 7.800.000 em 10 anos</div>
+  </div>
+
+  <button class="btn">📄 Gerar PDF personalizado</button>
+</div>
+
+</body>
+</html>

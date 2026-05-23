@@ -1,0 +1,112 @@
+<h2>Esboço das 3 telas do simulador</h2>
+<p class="subtitle">Confirme os campos de cada etapa — podemos ajustar</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Tela 1 de 3 — Situação Atual (現状)</div>
+    <div class="mockup-body" style="display:grid;gap:10px;padding:16px">
+      <p style="color:#888;font-size:13px;margin:0">Preencha as despesas mensais atuais do cliente</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="label">住宅ローン (Financiamento)</div>
+          <input class="mock-input" placeholder="¥ 90.000">
+        </div>
+        <div>
+          <div class="label">車ローン (Carro)</div>
+          <input class="mock-input" placeholder="¥ 40.000">
+        </div>
+        <div>
+          <div class="label">クレジット (Cartão)</div>
+          <input class="mock-input" placeholder="¥ 30.000">
+        </div>
+        <div>
+          <div class="label">電気代 (Luz)</div>
+          <input class="mock-input" placeholder="¥ 20.000">
+        </div>
+        <div>
+          <div class="label">ガス代 (Gás)</div>
+          <input class="mock-input" placeholder="¥ 15.000">
+        </div>
+        <div>
+          <div class="label">その他 (Outros)</div>
+          <input class="mock-input" placeholder="¥ 0">
+        </div>
+      </div>
+      <button class="mock-button" style="margin-top:8px">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Tela 2 de 3 — Proposta MATOME (まとめプラン)</div>
+    <div class="mockup-body" style="display:grid;gap:10px;padding:16px">
+      <p style="color:#888;font-size:13px;margin:0">Corretor preenche a proposta consolidada</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="label">Nova parcela roukin (新ローン)</div>
+          <input class="mock-input" placeholder="¥ 130.000">
+        </div>
+        <div>
+          <div class="label">Reforma incluída? (リフォーム)</div>
+          <input class="mock-input" placeholder="¥ 0">
+        </div>
+        <div>
+          <div class="label">Área externa (外構工事)</div>
+          <input class="mock-input" placeholder="¥ 0">
+        </div>
+        <div>
+          <div class="label">Painel solar (太陽光)</div>
+          <select class="mock-input"><option>Sim — elimina conta de luz</option><option>Não</option></select>
+        </div>
+        <div>
+          <div class="label">Sistema all-electric (オール電化)</div>
+          <select class="mock-input"><option>Sim — elimina gás</option><option>Não</option></select>
+        </div>
+      </div>
+      <button class="mock-button" style="margin-top:8px">Ver resultado →</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Tela 3 de 3 — Resultado MATOME</div>
+    <div class="mockup-body" style="padding:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <div style="background:#fee;border-radius:8px;padding:12px">
+          <div class="label" style="color:#c00">❌ Situação Atual</div>
+          <table style="width:100%;font-size:13px;margin-top:8px">
+            <tr><td>住宅ローン</td><td style="text-align:right">¥ 90.000</td></tr>
+            <tr><td>車ローン</td><td style="text-align:right">¥ 40.000</td></tr>
+            <tr><td>クレジット</td><td style="text-align:right">¥ 30.000</td></tr>
+            <tr><td>電気代</td><td style="text-align:right">¥ 20.000</td></tr>
+            <tr><td>ガス代</td><td style="text-align:right">¥ 15.000</td></tr>
+            <tr style="font-weight:bold;border-top:1px solid #ccc"><td>TOTAL</td><td style="text-align:right">¥ 195.000</td></tr>
+          </table>
+        </div>
+
+        <div style="background:#efe;border-radius:8px;padding:12px">
+          <div class="label" style="color:#060">✅ Com MATOME</div>
+          <table style="width:100%;font-size:13px;margin-top:8px">
+            <tr><td>新ローン (consolidado)</td><td style="text-align:right">¥ 130.000</td></tr>
+            <tr><td>電気代 (painel solar)</td><td style="text-align:right">¥ 0</td></tr>
+            <tr><td>ガス代 (all-electric)</td><td style="text-align:right">¥ 0</td></tr>
+            <tr><td colspan="2" style="color:#888;font-size:11px">Carro e cartão: absorvidos no roukin</td></tr>
+            <tr style="font-weight:bold;border-top:1px solid #ccc"><td>TOTAL</td><td style="text-align:right">¥ 130.000</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:#e8f4e8;border-radius:8px;padding:12px;text-align:center;margin-bottom:12px">
+        <div style="font-size:24px;font-weight:bold;color:#060">Economia: ¥ 65.000/mês</div>
+        <div style="color:#888;font-size:13px">= ¥ 780.000 por ano</div>
+      </div>
+
+      <button class="mock-button">📄 Gerar PDF personalizado</button>
+    </div>
+  </div>
+</div>
