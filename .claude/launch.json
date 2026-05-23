@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "simulador",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "--directory", "C:\\Users\\hiros\\Downloads"],
+      "port": 8000,
+      "autoPort": true
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3)",
+      "WebFetch(domain:unsplash.com)",
+      "WebSearch",
+      "WebFetch(domain:images.unsplash.com)",
+      "WebFetch(domain:www.machiya-inn-japan.com)",
+      "WebFetch(domain:www.boredpanda.com)",
+      "WebFetch(domain:source.unsplash.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:truelifeabroad.medium.com)",
+      "WebFetch(domain:urbanhotblog.wordpress.com)",
+      "WebFetch(domain:japanbwoe.wordpress.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:api.unsplash.com)",
+      "Read(//c/Users/hiros/Downloads/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(pip install *)",
+      "Bash(python3 test_properties.py)",
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:brainstorming:*)",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\hiros\\\\Mirai\\\\matome\")",
+      "Bash(bash \"/c/Users/hiros/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/brainstorming/scripts/start-server.sh\" --project-dir \"/c/Users/hiros/Mirai/matome\")",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:writing-plans:*)",
+      "Skill(superpowers:executing-plans)",
+      "Skill(superpowers:executing-plans:*)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

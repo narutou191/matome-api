@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Capacidade de Financiamento</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+      --color-bg:#f8f7f4; --color-surface:#ffffff; --color-surface-2:#f5f4f1; --color-border:#e8e6e1; --color-divider:#ebe9e4;
+      --color-text:#1a1816; --color-text-muted:#6b6962; --color-text-faint:#9d9a92; --color-primary:#01696f; --color-primary-hover:#0c4e54; --color-primary-highlight:#e8f4f5;
+      --color-success:#437a22; --color-warning:#964219; --color-error:#d32f2f;
+      --radius-sm:0.375rem; --radius-md:0.5rem; --radius-lg:0.75rem; --radius-xl:1rem; --radius-2xl:1.5rem;
+      --font-body:'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --shadow-sm:0 2px 8px rgba(0,0,0,0.08);
+      --shadow-md:0 4px 16px rgba(0,0,0,0.12);
+      --shadow-lg:0 8px 24px rgba(0,0,0,0.16);
+    }
+    [data-theme="dark"] {
+      --color-bg:#0f0e0c; --color-surface:#1a1918; --color-surface-2:#242321; --color-border:#3a3835; --color-divider:#2d2b28;
+      --color-text:#f5f3f0; --color-text-muted:#a09d96; --color-text-faint:#75736d; --color-primary:#4f98a3; --color-primary-hover:#227f8b; --color-primary-highlight:#1a3a42;
+      --color-success:#8ac926; --color-warning:#d08a5d; --color-error:#ff5252;
+      --shadow-sm:0 2px 8px rgba(0,0,0,0.3);
+      --shadow-md:0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html{-webkit-text-size-adjust:none;text-size-adjust:none;scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;background:var(--color-bg);color:var(--color-text);transition:background-color 0.3s ease, color 0.3s ease}
+    input,button{font:inherit}
+
+    .header{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      padding:var(--space-4) var(--space-6);
+      max-width:1000px;
+      margin:0 auto;
+      border-bottom:1px solid var(--color-border);
+    }
+
+    .theme-toggle{
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      border:2px solid var(--color-border);
+      background:var(--color-surface-2);
+      color:var(--color-text);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.25rem;
+      transition:all 0.3s ease;
+    }
+    .theme-toggle:hover{
+      background:var(--color-primary-highlight);
+      border-color:var(--color-primary);
+      color:var(--color-primary);
+      transform:scale(1.05);
+    }
+
+    .wrap{max-width:1000px;margin:0 auto;padding:var(--space-8) var(--space-6)}
+
+    .section{margin-bottom:var(--space-10)}
+    .section-title{
+      font-size:var(--text-xl);
+      font-weight:800;
+      margin:0 0 var(--space-6);
+      text-align:center;
+      letter-spacing:-0.5px;
+    }
+    .section-title.flat35{color:#00a651;text-shadow:0 2px 8px rgba(0,166,81,0.15)}
+    .section-title.sbi{color:#0052cc;text-shadow:0 2px 8px rgba(0,82,204,0.15)}
+    .section-title.roukin{color:#d40015;text-shadow:0 2px 8px rgba(212,0,21,0.15)}
+
+    .field-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-6);margin-bottom:var(--space-8)}
+    .field-row{display:grid;grid-template-columns:auto 1fr;gap:var(--space-3);align-items:center}
+    .field-label{font-weight:700;font-size:var(--text-base);color:var(--color-text)}
+    .field-required::after{content:" *";color:var(--color-error);font-weight:800}
+
+    input[type="number"]{
+      width:100%;
+      padding:0.85rem 1rem;
+      border:2px solid var(--color-border);
+      border-radius:var(--radius-lg);
+      background:var(--color-surface);
+      color:var(--color-text);
+      min-height:48px;
+      font-size:var(--text-base);
+      font-weight:600;
+      transition:all 0.2s ease;
+    }
+    input[type="number"]:focus{
+      outline:none;
+      border-color:var(--color-primary);
+      box-shadow:0 0 0 3px var(--color-primary-highlight);
+      background:var(--color-surface);
+    }
+    input[type="number"]::placeholder{color:var(--color-text-muted);font-weight:500}
+    input[type="number"]:readonly{
+      background:var(--color-surface-2);
+      font-weight:700;
+      cursor:default;
+      border-color:var(--color-divider);
+    }
+
+    .currency-prefix{
+      background:var(--color-surface-2);
+      border:2px solid var(--color-border);
+      border-right:none;
+      padding:0.85rem 1rem;
+      border-radius:var(--radius-lg) 0 0 var(--radius-lg);
+      color:var(--color-text-muted);
+      font-weight:700;
+      min-height:48px;
+      display:flex;
+      align-items:center;
+      font-size:var(--text-lg);
+    }
+
+    .input-group{display:grid;grid-template-columns:auto 1fr;gap:0}
+    .input-group input{border-radius:0 var(--radius-lg) var(--radius-lg) 0;border-left:none}
+
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-6)}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-6)}
+
+    .field-box{
+      background:linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface) 100%);
+      border:1.5px solid var(--color-border);
+      border-radius:var(--radius-xl);
+      padding:var(--space-5);
+      display:grid;
+      gap:var(--space-3);
+      box-shadow:var(--shadow-sm);
+      transition:all 0.3s ease;
+    }
+    .field-box:hover{
+      border-color:var(--color-primary);
+      box-shadow:var(--shadow-md);
+      transform:translateY(-2px);
+    }
+
+    .field-box-label{font-size:var(--text-sm);color:var(--color-text-muted);font-weight:600;line-height:1.4}
+    .field-box-value{font-size:var(--text-lg);font-weight:800;color:var(--color-primary);letter-spacing:-0.5px}
+
+    .bank-section{
+      background:var(--color-surface);
+      border:1.5px solid var(--color-border);
+      border-radius:var(--radius-2xl);
+      padding:var(--space-8);
+      margin-bottom:var(--space-8);
+      box-shadow:var(--shadow-sm);
+      transition:all 0.3s ease;
+    }
+    .bank-section:hover{
+      box-shadow:var(--shadow-md);
+      border-color:var(--color-text-faint);
+    }
+
+    .btn-group{display:flex;justify-content:center;gap:var(--space-4);margin-top:var(--space-10);flex-wrap:wrap}
+    .btn{
+      padding:1rem 2rem;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      font-size:var(--text-base);
+      min-height:48px;
+      min-width:180px;
+      transition:all 0.3s ease;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      box-shadow:var(--shadow-sm);
+    }
+    .btn.primary{
+      background:linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+      color:#fff;
+    }
+    .btn.primary:hover{
+      background:linear-gradient(135deg, #0052a3 0%, #003d7a 100%);
+      transform:translateY(-2px);
+      box-shadow:var(--shadow-lg);
+    }
+    .btn.primary:active{transform:translateY(0)}
+
+    .compare-section{
+      background:var(--color-surface);
+      border:1.5px solid var(--color-border);
+      border-radius:var(--radius-2xl);
+      padding:var(--space-8);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .compare-group{margin-bottom:var(--space-8)}
+    .compare-group:last-child{margin-bottom:0}
+    .compare-title{
+      font-size:var(--text-lg);
+      font-weight:800;
+      margin-bottom:var(--space-5);
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    .compare-title.flat35{color:#00a651}
+    .compare-title.sbi{color:#0052cc}
+    .compare-title.roukin{color:#d40015}
+
+    .compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-5)}
+
+    .compare-item{
+      background:linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface) 100%);
+      border:1.5px solid var(--color-border);
+      border-radius:var(--radius-xl);
+      padding:var(--space-5);
+      display:grid;
+      gap:var(--space-2);
+      box-shadow:var(--shadow-sm);
+      transition:all 0.3s ease;
+    }
+    .compare-item:hover{
+      border-color:var(--color-primary);
+      box-shadow:var(--shadow-md);
+      transform:translateY(-2px);
+    }
+    .compare-label{font-size:var(--text-sm);color:var(--color-text-muted);font-weight:600}
+    .compare-value{font-size:var(--text-lg);font-weight:800;color:var(--color-primary)}
+
+    @media (max-width: 1023px) {
+      .wrap{padding:var(--space-6) var(--space-5)}
+      .grid-2, .grid-3, .compare-grid{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .bank-section{padding:var(--space-6)}
+    }
+
+    @media (max-width: 767px) {
+      .wrap{padding:var(--space-5) var(--space-4)}
+      .header{padding:var(--space-3) var(--space-4)}
+      .field-group{grid-template-columns:1fr;gap:var(--space-4)}
+      .field-row{grid-template-columns:1fr}
+      .input-group{grid-template-columns:auto 1fr}
+      .currency-prefix{padding:0.75rem 0.85rem;font-size:var(--text-base)}
+      input[type="number"]{padding:0.75rem 0.85rem;font-size:var(--text-sm)}
+      .section-title{font-size:var(--text-lg);margin-bottom:var(--space-4)}
+      .bank-section{padding:var(--space-4);margin-bottom:var(--space-6)}
+      .field-box{padding:var(--space-3)}
+      .field-box-label{font-size:var(--text-xs)}
+      .field-box-value{font-size:var(--text-base)}
+      .btn{padding:0.85rem 1.4rem;min-width:140px;font-size:var(--text-sm)}
+      .compare-item{padding:var(--space-3)}
+      .compare-label{font-size:var(--text-xs)}
+      .compare-value{font-size:var(--text-base)}
+      .field-group{gap:var(--space-3);margin-bottom:var(--space-6)}
+    }
+
+    @media (max-width: 639px) {
+      .wrap{padding:var(--space-4) var(--space-3)}
+      .header{padding:var(--space-2) var(--space-3)}
+      .field-label{font-size:var(--text-sm)}
+      .section-title{font-size:var(--text-base);margin-bottom:var(--space-3)}
+      .field-group{gap:var(--space-2);margin-bottom:var(--space-4)}
+      .bank-section{padding:var(--space-3);margin-bottom:var(--space-4)}
+      .grid-2{gap:var(--space-3)}
+      .theme-toggle{width:40px;height:40px;font-size:1.1rem}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <button class="theme-toggle" id="themeToggle" title="Alternar tema" aria-label="Alternar entre modo claro e escuro">
+      <span id="themeIcon">🌙</span>
+    </button>
+  </header>
+
+  <div class="wrap">
+    <!-- Entradas Principais -->
+    <section class="section">
+      <div class="field-group">
+        <div class="field-row">
+          <label class="field-label field-required">Renda total anual</label>
+          <div class="input-group">
+            <span class="currency-prefix">¥</span>
+            <input id="rendaTotal" type="number" min="0" step="10000" placeholder="Digite o valor anual" value="5000000" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Dívidas mensais</label>
+          <div class="input-group">
+            <span class="currency-prefix">¥</span>
+            <input id="dividasMensais" type="number" min="0" step="1000" placeholder="Digite o valor" value="30000" />
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="field-box">
+          <div class="field-box-label">30% da renda<br>(Renda até 399万)</div>
+          <div class="field-box-value" id="fx30">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Ideal 25% da renda<br>(Renda até 399万)</div>
+          <div class="field-box-value" id="fx25">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Tempo de Financiamento<br>(Anos)</div>
+          <input id="prazoAnos" type="number" min="1" max="40" step="1" value="35" style="margin-top:auto" />
+        </div>
+
+        <div class="field-box">
+          <div class="field-box-label">35% da renda<br>(Renda superior 400万)<br>(SBI)</div>
+          <div class="field-box-value" id="fx35">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Ideal 30% da renda<br>(Acima de 400万)<br>(SBI)</div>
+          <div class="field-box-value" id="fx30ideal">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Entrada estimada do imóvel (%)</div>
+          <input id="entradaPercentual" type="number" min="0" max="100" step="1" value="10" style="margin-top:auto" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Flat 35 -->
+    <section class="bank-section">
+      <h2 class="section-title flat35">Flat 35</h2>
+
+      <div class="field-box" style="margin-bottom:var(--space-6)">
+        <div class="field-box-label">Cálculo base do mês</div>
+        <div class="field-box-value" id="flatBase">¥0</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-box">
+          <div class="field-box-label">Valor total do Financiamento 30%</div>
+          <div class="field-box-value" id="flatFin30">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor máximo do imóvel</div>
+          <div class="field-box-value" id="flatImovel30">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor total do Financiamento 35%</div>
+          <div class="field-box-value" id="flatFin35">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor máximo do imóvel</div>
+          <div class="field-box-value" id="flatImovel35">¥0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SBI -->
+    <section class="bank-section">
+      <h2 class="section-title sbi">SBI</h2>
+
+      <div class="field-box" style="margin-bottom:var(--space-6)">
+        <div class="field-box-label">Cálculo base SBI</div>
+        <div class="field-box-value" id="sbiBase">¥0</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-box">
+          <div class="field-box-label">Valor total do Financiamento</div>
+          <div class="field-box-value" id="sbiFin">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor máximo do imóvel</div>
+          <div class="field-box-value" id="sbiImovel">¥0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toukai Roukin -->
+    <section class="bank-section">
+      <h2 class="section-title roukin">TOUKAI ROUKIN</h2>
+
+      <div class="field-box" style="margin-bottom:var(--space-6)">
+        <div class="field-box-label">Cálculo base Roukin</div>
+        <div class="field-box-value" id="roukinBase">¥0</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-box">
+          <div class="field-box-label">Valor total do Financiamento 30%</div>
+          <div class="field-box-value" id="roukinFin30">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor máximo do imóvel</div>
+          <div class="field-box-value" id="roukinImovel30">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor total do Financiamento 35%</div>
+          <div class="field-box-value" id="roukinFin35">¥0</div>
+        </div>
+        <div class="field-box">
+          <div class="field-box-label">Valor máximo do imóvel</div>
+          <div class="field-box-value" id="roukinImovel35">¥0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparativo -->
+    <section class="compare-section">
+      <h2 class="section-title" style="margin-bottom:var(--space-8)">Comparativo</h2>
+
+      <div class="compare-group">
+        <h3 class="compare-title flat35">FLAT 35</h3>
+        <div class="compare-grid">
+          <div class="compare-item">
+            <div class="compare-label">Total do Financiamento ( 399万 )</div>
+            <div class="compare-value" id="cmpFlat399">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total do Financiamento ( 400万 )</div>
+            <div class="compare-value" id="cmpFlat400">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total Ideal do Financiamento ( 399万 )</div>
+            <div class="compare-value" id="cmpFlat399Ideal">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total Ideal do Financiamento ( 400万 )</div>
+            <div class="compare-value" id="cmpFlat400Ideal">¥0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-group">
+        <h3 class="compare-title sbi">SBI</h3>
+        <div class="compare-grid">
+          <div class="compare-item">
+            <div class="compare-label">Total do Financiamento</div>
+            <div class="compare-value" id="cmpSbi">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total ideal do Financiamento</div>
+            <div class="compare-value" id="cmpSbiIdeal">¥0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-group">
+        <h3 class="compare-title roukin">ROUKIN</h3>
+        <div class="compare-grid">
+          <div class="compare-item">
+            <div class="compare-label">Total do Financiamento ( 399万 )</div>
+            <div class="compare-value" id="cmpRoukin399">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total do Financiamento ( 400万 )</div>
+            <div class="compare-value" id="cmpRoukin400">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total ideal do Financiamento ( 399万 )</div>
+            <div class="compare-value" id="cmpRoukin399Ideal">¥0</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">Total ideal do Financiamento ( 400万 )</div>
+            <div class="compare-value" id="cmpRoukin400Ideal">¥0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="btn-group">
+      <button class="btn primary" type="button" id="resetar">Faça novamente</button>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const fields = [
+      'rendaTotal','dividasMensais','prazoAnos','entradaPercentual',
+      'taxaFlat','taxaSbi','taxaRoukin'
+    ];
+
+    const taxaFlat = 1.80;
+    const taxaSbi = 0.65;
+    const taxaRoukin = 0.90;
+
+    const currency = (v) => '¥' + Math.round(Number.isFinite(v) ? v : 0).toLocaleString('ja-JP');
+    const monthlyCapacity = (income, ratio) => Math.max(0, income * ratio);
+
+    function financedValueFromPayment(payment, annualRate, years) {
+      const n = Math.max(1, years * 12);
+      const r = Math.max(0, annualRate / 100 / 12);
+      if (payment <= 0) return 0;
+      if (r === 0) return payment * n;
+      return payment * ((1 - Math.pow(1 + r, -n)) / r);
+    }
+
+    function propertyValue(financed, downPercent) {
+      const p = Math.min(100, Math.max(0, downPercent)) / 100;
+      return p >= 1 ? financed : financed / (1 - p);
+    }
+
+    function basePerMillion(annualRate, years) {
+      return financedValueFromPayment(10000, annualRate, years);
+    }
+
+    function setText(id, value) { $(id).textContent = currency(value); }
+
+    function calculate() {
+      const rendaAnual = Number($('rendaTotal').value || 0);
+      const rendaMensal = rendaAnual / 12;
+      const dividas = Number($('dividasMensais').value || 0);
+      const anos = Number($('prazoAnos').value || 0);
+      const entrada = Number($('entradaPercentual').value || 0);
+
+      const fx30 = monthlyCapacity(rendaMensal, 0.30);
+      const fx25 = monthlyCapacity(rendaMensal, 0.25);
+      const fx35 = monthlyCapacity(rendaMensal, 0.35);
+      const fx30ideal = monthlyCapacity(rendaMensal, 0.30);
+
+      setText('fx30', fx30); setText('fx25', fx25); setText('fx35', fx35);
+      setText('fx30ideal', fx30ideal);
+
+      const flatBase = basePerMillion(taxaFlat, anos);
+      const flatFin30 = financedValueFromPayment(fx30, taxaFlat, anos);
+      const flatFin35 = financedValueFromPayment(fx35, taxaFlat, anos);
+      setText('flatBase', flatBase); setText('flatFin30', flatFin30); setText('flatImovel30', propertyValue(flatFin30, entrada));
+      setText('flatFin35', flatFin35); setText('flatImovel35', propertyValue(flatFin35, entrada));
+
+      const sbiBase = basePerMillion(taxaSbi, anos);
+      const sbiFin = financedValueFromPayment(fx35, taxaSbi, anos);
+      const sbiIdeal = financedValueFromPayment(fx30ideal, taxaSbi, anos);
+      setText('sbiBase', sbiBase); setText('sbiFin', sbiFin); setText('sbiImovel', propertyValue(sbiFin, entrada)); setText('sbiIdeal', sbiIdeal);
+
+      const roukinBase = basePerMillion(taxaRoukin, anos);
+      const roukinFin30 = financedValueFromPayment(fx30, taxaRoukin, anos);
+      const roukinFin35 = financedValueFromPayment(fx35, taxaRoukin, anos);
+      setText('roukinBase', roukinBase); setText('roukinFin30', roukinFin30); setText('roukinImovel30', propertyValue(roukinFin30, entrada));
+      setText('roukinFin35', roukinFin35); setText('roukinImovel35', propertyValue(roukinFin35, entrada));
+
+      setText('cmpFlat399', flatFin30); setText('cmpFlat399Ideal', financedValueFromPayment(fx25, taxaFlat, anos));
+      setText('cmpFlat400', flatFin35); setText('cmpFlat400Ideal', financedValueFromPayment(fx30ideal, taxaFlat, anos));
+      setText('cmpSbi', sbiFin); setText('cmpSbiIdeal', sbiIdeal);
+      setText('cmpRoukin399', roukinFin30); setText('cmpRoukin399Ideal', financedValueFromPayment(fx25, taxaRoukin, anos));
+      setText('cmpRoukin400', roukinFin35); setText('cmpRoukin400Ideal', financedValueFromPayment(fx30ideal, taxaRoukin, anos));
+    }
+
+    document.querySelectorAll('input[type="number"]').forEach((el) => el.addEventListener('input', calculate));
+
+    $('resetar').addEventListener('click', () => {
+      $('rendaTotal').value = '';
+      $('dividasMensais').value = '';
+      $('prazoAnos').value = 35;
+      $('entradaPercentual').value = 10;
+      calculate();
+    });
+
+    (() => {
+      const toggleBtn = $('themeToggle');
+      const iconEl = $('themeIcon');
+      const html = document.documentElement;
+
+      let currentTheme = localStorage.getItem('theme') ||
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+      const setTheme = (theme) => {
+        currentTheme = theme;
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        iconEl.textContent = theme === 'dark' ? '☀️' : '🌙';
+      };
+
+      setTheme(currentTheme);
+
+      toggleBtn.addEventListener('click', () => {
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+    })();
+
+    calculate();
+  </script>
+</body>
+</html>
