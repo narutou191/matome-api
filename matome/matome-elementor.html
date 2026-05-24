@@ -280,7 +280,7 @@
       </div>
       <div class="mres" id="mn-resumo"></div>
       <button class="mbtn sec" data-mact="t3-back">← Voltar</button>
-      <button class="mbtn" data-mact="pdf">📄 Gerar PDF personalizado</button>
+      <button class="mbtn" data-mact="pdf">📸 Baixar Imagem PNG</button>
     </div>
     <div class="mpdff mc">Simulação gerada pelo Simulador MATOME &nbsp;·&nbsp; Valores ilustrativos sujeitos à análise de crédito</div>
   </div>
@@ -429,48 +429,36 @@ function init(){
     if(a==='t3-back'){goTo(2);}
     if(a==='pdf'){
       lerT1();lerT2();
-      var tABase=S.rCasa+S.rRefl+S.ref+S.ext+S.sol+S.oob;
-      var tB=S.rCar+S.rCrt+S.rOut+S.rOut2;
-      var gT=tABase+tB;
-      var buroc=Math.round(gT*0.022)+Math.max(330000,Math.round(gT*0.0165))+300000;
-      var tA=tABase+buroc;
-      var pA=pmt(tA,S.txCasa,S.pzCasa);
-      var pB=pmt(tB,S.txMat,S.pzMat);
-      var tAntes=S.fin+S.refl+S.car+S.crt+S.luz+S.gas+S.out+S.out2;
-      var lD=S.sElim?0:S.luz;var gD=S.aDenka?0:S.gas;
-      var tDep=pA+pB+lD+gD;var eco=tAntes-tDep;
-      var dF=S.data?new Date(S.data+'T12:00').toLocaleDateString('pt-BR'):'';
-      var dados={
-        nome:S.nome,idade:S.idade,data:dF,
-        fin:S.fin,refl:S.refl,car:S.car,crt:S.crt,luz:S.luz,gas:S.gas,out:S.out,out2:S.out2,
-        ref:S.ref,ext:S.ext,sol:S.sol,oob:S.oob,
-        pmt_a:pA,pmt_b:pB,eco_mensal:eco,
-        anos_a:S.pzCasa,taxa_a:S.txCasa,anos_b:S.pzMat,taxa_b:S.txMat,
-        total_a:tA,total_b:tB
-      };
       var btn=btn||e.target.closest('[data-mact="pdf"]');
-      if(btn){btn.disabled=true;btn.textContent='⏳ Gerando...';}
-      fetch('https://matome-api.onrender.com/api/gerar-pdf',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(dados)
-      })
-      .then(function(r){if(!r.ok)throw new Error('Erro ao gerar PDF');return r.blob();})
-      .then(function(blob){
-        var url=window.URL.createObjectURL(blob);
-        var a=document.createElement('a');a.href=url;
-        a.download='MATOME-'+(S.nome||'simulacao').replace(/\s+/g,'_')+'.pdf';
-        document.body.appendChild(a);a.click();
-        window.URL.revokeObjectURL(url);a.remove();
-      })
-      .catch(function(err){
-        alert('Erro: '+err.message+'\n\nCertifique-se de que o servidor está rodando.');
-        console.error(err);
-      })
-      .finally(function(){if(btn){btn.disabled=false;btn.textContent='📄 Gerar PDF personalizado';}});
+      if(btn){btn.disabled=true;btn.textContent='⏳ Gerando imagem...';}
+      if(typeof html2canvas!=='undefined'){
+        html2canvas(document.querySelector('[data-mresult]')||g('mn-resultado'),{
+          backgroundColor:'#f5f3ef',scale:2,useCORS:true,logging:false,allowTaint:true
+        }).then(function(canvas){
+          canvas.toBlob(function(blob){
+            var url=window.URL.createObjectURL(blob);
+            var a=document.createElement('a');
+            a.href=url;
+            a.download='MATOME-'+(S.nome||'simulacao').replace(/\s+/g,'_')+'-'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
+          });
+        }).catch(function(err){
+          console.error('Erro:',err);
+          alert('Erro ao gerar imagem. Tente novamente.');
+          if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
+        });
+      }else{
+        alert('Biblioteca não carregada. Recarregue a página.');
+        if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
+      }
     }
   });
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
