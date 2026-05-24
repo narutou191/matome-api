@@ -432,7 +432,8 @@ function init(){
       var btn=btn||e.target.closest('[data-mact="pdf"]');
       if(btn){btn.disabled=true;btn.textContent='⏳ Gerando imagem...';}
       if(typeof html2canvas!=='undefined'){
-        html2canvas(document.querySelector('[data-mresult]')||g('mn-resultado'),{
+        var el=document.getElementById('mt3');if(!el){alert('Resultado não encontrado');return;}
+        html2canvas(el,{
           backgroundColor:'#f5f3ef',scale:2,useCORS:true,logging:false,allowTaint:true
         }).then(function(canvas){
           canvas.toBlob(function(blob){
