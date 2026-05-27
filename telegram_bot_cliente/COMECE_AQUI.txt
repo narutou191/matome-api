@@ -1,0 +1,72 @@
+================================================================================
+    TELEGRAM BOT - COMECE AQUI
+================================================================================
+
+Seu bot Telegram esta PRONTO!
+
+Para configurar como servico Windows (24/7), siga os passos abaixo:
+
+================================================================================
+PASSO 1: EXECUTAR O INSTALADOR
+================================================================================
+
+No Explorador de Arquivos (Windows Explorer):
+
+1. Navegue ate: C:\Users\hiros\Mirai\telegram_bot_cliente
+2. Procure pelo arquivo: install.bat
+3. Clique com botao DIREITO nele
+4. Selecione: "Executar como administrador"
+5. Clique em "SIM" na mensagem de confirmacao
+6. O script vai instalar o bot como servico Windows
+
+Pronto! O bot vai rodar 24/7 automaticamente.
+
+================================================================================
+PASSO 2: VERIFICAR A INSTALACAO
+================================================================================
+
+Abra PowerShell como admin (Win+X, PowerShell Admin) e execute:
+
+  Start-ScheduledTask -TaskName "TelegramClientBot"
+
+Isso vai iniciar o bot imediatamente.
+
+================================================================================
+PASSO 3: USAR O BOT
+================================================================================
+
+1. Abra seu Telegram
+2. Procure por seu bot (ou use o link que configurou)
+3. Envie: /start
+4. O bot vai fazer perguntas sobre o cliente em 5 blocos
+5. Responda cada pergunta
+6. Ao final, envie: /complete
+7. O bot vai gerar um Excel com todas as informacoes
+
+Os arquivos Excel serao salvos em:
+  C:\Users\hiros\Mirai\telegram_bot_cliente\output\
+
+================================================================================
+PARA PARAR O BOT
+================================================================================
+
+No PowerShell (admin):
+  Stop-ScheduledTask -TaskName "TelegramClientBot"
+
+================================================================================
+MAIS OPCOES
+================================================================================
+
+Para gerenciar o bot (iniciar, parar, remover):
+  Abra: SETUP_WINDOWS_SERVICE.md
+
+Para ver logs e troubleshooting:
+  Abra: SETUP_WINDOWS_SERVICE.md
+
+================================================================================
+PRONTO!
+
+Seu bot esta funcionando 24/7.
+
+Duvidas? Veja SETUP_WINDOWS_SERVICE.md
+================================================================================

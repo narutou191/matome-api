@@ -1,0 +1,85 @@
+================================================================================
+INSTALAR BOT COMO SERVICO WINDOWS 24/7
+================================================================================
+
+OPCAO A: AUTOMATICAMENTE (Mais facil)
+================================================================================
+
+1. Clique no Windows Menu (logo do Windows no canto inferior esquerdo)
+2. Digite: install.bat
+3. Clique com BOTAO DIREITO em install.bat
+4. Selecione: Executar como administrador
+5. Clique em SIM quando pedir confirmacao
+6. Pronto! O bot vai rodar 24/7
+
+OPCAO B: MANUALMENTE (Se A nao funcionar)
+================================================================================
+
+1. Pressione: Windows + X
+2. Clique em: Windows PowerShell (Admin)
+3. Clique em: SIM na confirmacao de controle de conta
+4. Cola este comando e pressione Enter:
+
+   cd "C:\Users\hiros\Mirai\telegram_bot_cliente"
+   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+   .\create_task.ps1
+
+Depois que rodar, voce deve ver "SUCCESS: Task 'TelegramClientBot' created!"
+
+================================================================================
+COMPROVAR QUE FUNCIONOU
+================================================================================
+
+1. Pressione: Windows + X
+2. Clique em: Windows PowerShell (Admin)
+3. Digite: Get-ScheduledTask -TaskName "TelegramClientBot"
+4. Procure por "State" e veja se diz "Ready"
+
+Se disser "Ready" = Funcionou!
+
+================================================================================
+INICIAR O BOT AGORA (OPCIONAL)
+================================================================================
+
+Se quiser testar agora:
+
+1. Pressione: Windows + X
+2. Clique em: Windows PowerShell (Admin)
+3. Digite: Start-ScheduledTask -TaskName "TelegramClientBot"
+
+O bot vai comecara rodar!
+
+================================================================================
+PARAR O BOT (Se precisar)
+================================================================================
+
+1. Pressione: Windows + X
+2. Clique em: Windows PowerShell (Admin)
+3. Digite: Stop-ScheduledTask -TaskName "TelegramClientBot"
+
+================================================================================
+TESTAR NO TELEGRAM
+================================================================================
+
+Agora seu bot esta rodando 24/7!
+
+1. Abra Telegram
+2. Procure por seu bot (nome do bot que criou no @BotFather)
+3. Envie: /start
+4. Responda as perguntas que o bot fizer
+5. Ao final, envie: /complete
+
+O Excel vai ser gerado automaticamente em:
+  C:\Users\hiros\Mirai\telegram_bot_cliente\output\
+
+================================================================================
+PROBLEMAS?
+================================================================================
+
+Se nao funcionou:
+
+1. Verifique que tem admin no PC
+2. Tente a OPCAO B (manual) em vez da A
+3. Abra SETUP_WINDOWS_SERVICE.md para mais detalhes
+
+================================================================================

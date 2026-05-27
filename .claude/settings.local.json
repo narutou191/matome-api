@@ -54,7 +54,10 @@
       "Bash(rm -r bot/__pycache__ tests/__pycache__)",
       "Bash(python setup_windows_service.py install)",
       "Bash(git add *)",
-      "Bash(git commit -m 'fix: resolve environment variable loading and Unicode encoding issues *)"
+      "Bash(git commit -m 'fix: resolve environment variable loading and Unicode encoding issues *)",
+      "PowerShell(choco --version)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File create_task.ps1)",
+      "Bash(git commit -m 'chore: add Windows service installation and documentation *)"
     ]
   }
 }
