@@ -21,8 +21,8 @@ echo.
 echo Caminho: %CD%
 echo.
 
-REM Executar o script PowerShell
-powershell -NoProfile -ExecutionPolicy Bypass -Command "& '.\create_task.ps1'"
+REM Executar o script PowerShell com auto-elevacao
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1"
 
 echo.
 echo ====================================

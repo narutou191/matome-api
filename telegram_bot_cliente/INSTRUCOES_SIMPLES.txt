@@ -2,14 +2,25 @@
 INSTALAR BOT COMO SERVICO WINDOWS 24/7
 ================================================================================
 
-OPCAO A: AUTOMATICAMENTE (Mais facil)
+OPCAO A: AUTOMATICAMENTE (Mais facil) - RECOMENDADO
 ================================================================================
 
-1. Clique no Windows Menu (logo do Windows no canto inferior esquerdo)
-2. Digite: install.bat
-3. Clique com BOTAO DIREITO em install.bat
+METODO 1: Duplo clique no setup.ps1
+1. Navegue para: C:\Users\hiros\Mirai\telegram_bot_cliente
+2. Procure por: setup.ps1
+3. Clique com BOTAO DIREITO nele
+4. Selecione: Executar com PowerShell
+5. Clique em SIM quando PowerShell pedir confirmacao
+6. O script auto vai solicitar privilegios de admin
+7. Clique em SIM na janela de confirmacao
+8. Pronto! O bot vai rodar 24/7
+
+METODO 2: Duplo clique no install.bat (Se metodo 1 nao funcionar)
+1. Navegue para: C:\Users\hiros\Mirai\telegram_bot_cliente
+2. Procure por: install.bat
+3. Clique com BOTAO DIREITO nele
 4. Selecione: Executar como administrador
-5. Clique em SIM quando pedir confirmacao
+5. Clique em SIM na confirmacao
 6. Pronto! O bot vai rodar 24/7
 
 OPCAO B: MANUALMENTE (Se A nao funcionar)

@@ -57,7 +57,9 @@
       "Bash(git commit -m 'fix: resolve environment variable loading and Unicode encoding issues *)",
       "PowerShell(choco --version)",
       "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File create_task.ps1)",
-      "Bash(git commit -m 'chore: add Windows service installation and documentation *)"
+      "Bash(git commit -m 'chore: add Windows service installation and documentation *)",
+      "PowerShell(cd \"C:\\\\Users\\\\hiros\\\\Mirai\\\\telegram_bot_cliente\"; powershell -NoProfile -ExecutionPolicy Bypass -File setup.ps1)",
+      "Bash(git commit -m 'fix: improve Windows service installation with auto-elevation *)"
     ]
   }
 }
