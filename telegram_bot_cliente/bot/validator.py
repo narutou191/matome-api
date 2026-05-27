@@ -98,16 +98,29 @@ Instruções CRÍTICAS:
         })
 
         # Execute API call in thread pool to avoid blocking
+        # With retry logic for rate limits
         loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            self._executor,
-            lambda: self.client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=1024,
-                system=system_prompt,
-                messages=self.conversation_history
-            )
-        )
+
+        def call_api_with_retry():
+            import time
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    return self.client.messages.create(
+                        model="claude-haiku-4-5-20251001",
+                        max_tokens=1024,
+                        system=system_prompt,
+                        messages=self.conversation_history
+                    )
+                except Exception as e:
+                    if "529" in str(e) or "overload" in str(e).lower():
+                        if attempt < max_retries - 1:
+                            wait_time = 2 ** attempt  # 1, 2, 4 seconds
+                            time.sleep(wait_time)
+                            continue
+                    raise
+
+        response = await loop.run_in_executor(self._executor, call_api_with_retry)
 
         assistant_message = response.content[0].text
         self.conversation_history.append({
