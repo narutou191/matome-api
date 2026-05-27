@@ -16,6 +16,7 @@ class ConversationHandler:
         self.client_data[user_id] = ClientData()
         self.validators[user_id] = ClientValidator()
         context.user_data['current_block'] = 0
+        context.user_data['block_personal_index'] = 0
 
         welcome = """
 👋 Bem-vindo ao Sistema de Cadastro de Cliente!
@@ -44,26 +45,80 @@ Qual é o nome completo do cliente?
         current_block = context.user_data.get('current_block', 0)
         block_name = self.blocks[current_block] if current_block < len(self.blocks) else "special"
 
-        # Validar entrada com Claude
+        # Perguntas diretas do bot (não da Claude)
+        questions = {
+            "personal": [
+                "Qual é o nome completo do cliente? (Conforme Zairyu Card)",
+                "Qual é a data de nascimento do cliente? (YYYY/M/D)",
+                "Qual é o endereço do cliente?",
+                "Qual é o CEP do cliente?",
+                "Qual é o email do cliente?",
+                "Qual é o telefone do cliente?",
+                "Qual é a nacionalidade do cliente?"
+            ],
+            "employment": [
+                "Qual é o nome da empresa do cliente?",
+                "Qual é o endereço da empresa?",
+                "Qual é o local de trabalho do cliente?",
+                "Qual é a renda anual do cliente?",
+                "Qual é o tipo de contrato do cliente? (正社員, 契約社員, etc)",
+                "Qual é a data de contratação do cliente? (YYYY/M/D)",
+                "Qual é o dia do pagamento do cliente?"
+            ],
+            "family": [
+                "Qual é o estado civil do cliente? (solteiro/casado/divorciado/viúvo)",
+                "O cliente tem dependentes?",
+                "Quais são os nomes e idades dos dependentes?"
+            ],
+            "financing": [
+                "O cliente teve liquidações nos últimos 3 meses?",
+                "Quantos financiamentos ativos o cliente tem?",
+                "Quais são os detalhes dos financiamentos? (tipo, instituição, valor, parcelas)"
+            ],
+            "special": [
+                "O cliente tem trabalho paralelo?",
+                "O cliente está em licença maternidade?",
+                "O cliente tem doenças ou toma medicamentos?",
+                "Há alguma observação especial que devemos saber?"
+            ]
+        }
+
+        # Validar entrada com Claude (apenas validação, não fazer perguntas)
         try:
             result = await validator.validate_input(user_input, block_name)
             await update.message.reply_text(result["text"])
         except Exception as e:
             await update.message.reply_text(f"❌ Erro ao processar: {str(e)}\n\nTente novamente.")
 
-        # Preparar próxima pergunta ou bloco
-        next_prompts = {
-            "personal": "Data de nascimento (YYYY/M/D)?",
-            "employment": "Nome da empresa?",
-            "family": "Estado civil (solteiro/casado/divorciado/viúvo)?",
-            "financing": "Tem financiamentos ativos?",
-            "special": "Alguma observação especial que devemos saber?"
-        }
+        # Próxima pergunta do mesmo bloco ou próximo bloco
+        question_index = context.user_data.get(f'block_{block_name}_index', 0)
+        block_questions = questions.get(block_name, [])
 
-        next_prompt = next_prompts.get(block_name, "")
-        if next_prompt:
-            follow_up = f"\n\n➡️ Próximo: {next_prompt}"
-            await update.message.reply_text(follow_up)
+        if question_index + 1 < len(block_questions):
+            # Próxima pergunta do mesmo bloco
+            next_question = block_questions[question_index + 1]
+            context.user_data[f'block_{block_name}_index'] = question_index + 1
+            await update.message.reply_text(f"\n➡️ {next_question}")
+        else:
+            # Passou para o próximo bloco
+            context.user_data['current_block'] = current_block + 1
+            context.user_data[f'block_{block_name}_index'] = 0
+
+            if current_block + 1 < len(self.blocks):
+                next_block = self.blocks[current_block + 1]
+                next_questions = questions.get(next_block, [])
+                if next_questions:
+                    await update.message.reply_text(
+                        f"\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"📋 BLOCO {current_block + 2}/5: {next_block.upper()}\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+                        f"{next_questions[0]}"
+                    )
+            else:
+                await update.message.reply_text(
+                    "\n✅ Todos os blocos foram preenchidos!\n\n"
+                    "Envie /complete para gerar o Excel"
+                )
 
     async def complete_registration(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
