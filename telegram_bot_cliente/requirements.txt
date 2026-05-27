@@ -1,0 +1,7 @@
+python-telegram-bot
+anthropic
+openpyxl
+pydantic
+python-dotenv
+pytest
+pytest-asyncio

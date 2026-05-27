@@ -43,7 +43,7 @@
 #matome-app .mtotal{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--gold);border-radius:4px;padding:12px 16px;background:#fffdf7;margin-bottom:24px;flex-wrap:wrap;gap:6px;}
 #matome-app .mtotal .lbl{font-size:11px;color:var(--label);letter-spacing:1px;text-transform:uppercase;}
 #matome-app .mtotal .val{font-size:20px;font-weight:700;}
-#matome-app .mcalc{background:var(--dark);border-radius:6px;padding:24px 28px;margin-bottom:24px;}
+#matome-app .mcalc{background:#000000 !important;border-radius:6px;padding:24px 28px;margin-bottom:24px;filter:saturate(105%);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 #matome-app .mcalc-t{font-size:11px;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;}
 #matome-app .mcalc-sl{font-size:11px;padding:8px 0 4px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
 #matome-app .mcalc-sl.a{color:var(--gold);}
@@ -83,7 +83,7 @@
 #matome-app .mrr.note{font-size:10px;color:#999;font-style:italic;}
 #matome-app .mrr.zero .ra{color:var(--after-color);}
 #matome-app .mrr.ssep{border-top:1px dashed #ccc;margin-top:4px;padding-top:4px;}
-#matome-app .meco{background:linear-gradient(135deg,#3a3a3a 0%,#2d2d2d 100%);border-radius:8px;padding:28px 20px;text-align:center;margin-bottom:20px;border:2px solid var(--gold);box-shadow:0 8px 24px rgba(201,168,76,0.15);}
+#matome-app .meco{background:#000000 !important;border-radius:8px;padding:28px 20px;text-align:center;margin-bottom:20px;border:2px solid var(--gold);box-shadow:none;filter:saturate(105%);}
 #matome-app .meco .elbl{font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-weight:600;}
 #matome-app .meco .ebig{font-size:42px;font-weight:900;color:var(--gold);line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
 #matome-app .meco .esub{font-size:13px;color:#bbb;margin-top:14px;line-height:1.8;font-weight:300;}
@@ -97,8 +97,9 @@
   #matome-app .mc{padding:20px 16px;}
   #matome-app .mfg{grid-template-columns:1fr;gap:14px;}
   #matome-app .mrg{grid-template-columns:1fr;}
+  #matome-app .meco{background:#000000 !important;filter:saturate(130%) brightness(95%) contrast(110%) !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   #matome-app .meco .ebig{font-size:26px;}
-  #matome-app .mcalc{padding:16px;}
+  #matome-app .mcalc{background:#000000 !important;padding:16px;filter:saturate(130%) brightness(95%) contrast(110%) !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   #matome-app .ml{font-size:13px;padding:4px 0;}
   #matome-app .ml .cv{font-size:13px;}
   #matome-app .ml.subt .cv{font-size:13px;}
@@ -122,7 +123,7 @@
   #matome-app .mrg{grid-template-columns:1fr 1fr !important;}
   #matome-app .mcalc,#matome-app .meco,#matome-app .mrc.before,#matome-app .mrc.after,#matome-app .mbadge{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   #matome-app .mcalc{background:#2d2d2d !important;}
-  #matome-app .meco{background:#2d2d2d !important;}
+  #matome-app .meco{background:#1a1a1a !important;}
   #matome-app .mpdff{display:block !important;margin-top:20px;font-size:9px;color:#bbb;text-align:center;border-top:1px solid #eee;padding-top:10px;}
 }
 </style>
@@ -269,7 +270,7 @@
           </div>
           <div class="mrr zero"><span class="ri">電気代 <em id="mr-sollbl" style="font-size:10px;color:#888"></em></span><span class="ra" id="mr-luz2">—</span></div>
           <div class="mrr zero"><span class="ri">ガス代 <em id="mr-gaslbl" style="font-size:10px;color:#888"></em></span><span class="ra" id="mr-gas2" style="color:var(--after-color)">—</span></div>
-          <div class="mrr note"><span>車・クレジット・リフォームローン・その他ローン: まとめ に統合済<br><em style="font-size:10px">(carro, cartão, emprést. reforma e outros consolidados na Parte B)</em></span></div>
+          <div class="mrr note"><span>車・クレジット・その他ローン: まとめ に統合済<br><em style="font-size:10px">(carro, cartão e outros consolidados na Parte B)</em></span></div>
           <div class="mrr tr"><span class="ri">TOTAL</span><span class="ra" id="mr-tdep" style="color:var(--after-color);font-size:15px">—</span></div>
         </div>
       </div>
@@ -429,33 +430,48 @@ function init(){
     if(a==='t3-back'){goTo(2);}
     if(a==='pdf'){
       lerT1();lerT2();
-      var btn=btn||e.target.closest('[data-mact="pdf"]');
+      var btn=e.target.closest('[data-mact="pdf"]');
       if(btn){btn.disabled=true;btn.textContent='⏳ Gerando imagem...';}
-      if(typeof html2canvas!=='undefined'){
-        var el=document.getElementById('mt3');if(!el){alert('Resultado não encontrado');return;}
-        html2canvas(el,{
-          backgroundColor:'#f5f3ef',scale:2,useCORS:true,logging:false,allowTaint:true
-        }).then(function(canvas){
-          canvas.toBlob(function(blob){
-            var url=window.URL.createObjectURL(blob);
-            var a=document.createElement('a');
-            a.href=url;
-            a.download='MATOME-'+(S.nome||'simulacao').replace(/\s+/g,'_')+'-'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
-          });
-        }).catch(function(err){
-          console.error('Erro:',err);
-          alert('Erro ao gerar imagem. Tente novamente.');
-          if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
-        });
-      }else{
-        alert('Biblioteca não carregada. Recarregue a página.');
+      var el=document.getElementById('mt3');
+      if(!el){alert('Resultado não encontrado');return;}
+      html2canvas(el,{
+        allowTaint:true,
+        useCORS:true,
+        scale:4,
+        backgroundColor:'#f5f3ef',
+        logging:false,
+        onclone:function(clonedDoc){
+          var btns=clonedDoc.querySelectorAll('.mbtn');
+          btns.forEach(function(b){b.style.display='none';});
+          var ph=clonedDoc.querySelector('.mpdfh');
+          var pf=clonedDoc.querySelector('.mpdff');
+          if(ph){
+            ph.style.display='block';
+            ph.style.borderBottom='1px solid rgba(201,168,76,0.22)';
+            ph.style.paddingBottom='1rem';
+            ph.style.marginBottom='1.5rem';
+          }
+          if(pf){
+            pf.style.display='block';
+            pf.style.marginTop='1.5rem';
+            pf.style.borderTop='1px solid rgba(200,200,200,0.4)';
+            pf.style.paddingTop='1rem';
+            pf.style.color='rgba(100,100,100,0.7)';
+          }
+        }
+      }).then(function(canvas){
+        var link=document.createElement('a');
+        link.href=canvas.toDataURL('image/png');
+        link.download='MATOME-'+(S.nome||'simulacao').replace(/\s+/g,'_')+'-'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
-      }
+      }).catch(function(err){
+        console.error('Erro:',err);
+        alert('Erro ao gerar imagem. Tente novamente.');
+        if(btn){btn.disabled=false;btn.textContent='📸 Baixar Imagem PNG';}
+      });
     }
   });
 }

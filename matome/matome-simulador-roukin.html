@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATOME まとめ — Simulador de Consolidação de Dívidas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* ── ROUKIN DESIGN SYSTEM + MATOME ── */
+#matome-app {
+  --gold:#e8c97a;
+  --gold-l:#ffd89b;
+  --gold-d:rgba(201,168,76,0.18);
+  --ink:#000000;
+  --ink2:#0a0a0a;
+  --ink3:#141414;
+  --sf:rgba(255,255,255,0.06);
+  --sf-h:rgba(255,255,255,0.10);
+  --bd:rgba(201,168,76,0.30);
+  --bd-l:rgba(255,255,255,0.12);
+  --tx:#ffffff;
+  --tx-s:rgba(255,255,255,0.70);
+  --tx-d:rgba(255,255,255,0.45);
+  --green:#4ade80;
+  --green-d:rgba(74,222,128,0.15);
+  --red:#ff6b6b;
+  --red-d:rgba(255,107,107,0.15);
+  --blue:#60a5fa;
+
+  font-family:'DM Sans','Segoe UI',system-ui,sans-serif;
+  background:var(--ink);
+  color:var(--tx);
+  width:100%;
+  overflow-x:hidden;
+  position:relative;
+}
+
+#matome-app *,#matome-app *::before,#matome-app *::after {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+/* ── BACKGROUND PARTICLES ── */
+#matome-app::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.55;
+}
+
+#matome-app .mh {
+  position:sticky;
+  top:0;
+  z-index:100;
+  padding:1.5rem 2rem;
+  border-bottom:1px solid var(--bd);
+  backdrop-filter:blur(24px) saturate(1.2);
+  background:rgba(8,9,14,0.82);
+}
+
+#matome-app .mh-logo {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.25rem,3vw,1.75rem);
+  font-weight:600;
+  color:var(--tx);
+  letter-spacing:-0.02em;
+  line-height:1;
+}
+
+#matome-app .mh-logo strong {
+  color:var(--gold);
+}
+
+#matome-app .mh-tag {
+  font-size:0.68rem;
+  color:var(--tx-s);
+  letter-spacing:0.15em;
+  margin-top:0.5rem;
+  text-transform:uppercase;
+}
+
+/* ── PROGRESS STEPS ── */
+#matome-app .msteps {
+  display:flex;
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid var(--bd-l);
+  position:sticky;
+  top:80px;
+  z-index:99;
+  gap:0;
+}
+
+#matome-app .mstep {
+  flex:1;
+  padding:1rem;
+  text-align:center;
+  font-size:0.75rem;
+  color:var(--tx-d);
+  border-bottom:2px solid transparent;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  font-weight:500;
+  transition:all 0.4s cubic-bezier(0.22,1,0.36,1);
+  user-select:none;
+  position:relative;
+}
+
+#matome-app .mstep:not(:last-child)::after {
+  content:'';
+  position:absolute;
+  top:50%;
+  right:0;
+  width:1px;
+  height:60%;
+  background:var(--bd-l);
+}
+
+#matome-app .mstep.active {
+  color:var(--gold);
+  border-bottom-color:var(--gold);
+  font-weight:700;
+  background:var(--gold-d);
+}
+
+#matome-app .mstep.done {
+  color:var(--tx-s);
+  border-bottom-color:var(--gold);
+}
+
+/* ── SCREENS ── */
+#matome-app .mtela {
+  display:none;
+  animation:mrise 0.55s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+#matome-app .mtela.active {
+  display:block;
+}
+
+@keyframes mrise {
+  from{opacity:0;transform:translateY(24px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+#matome-app .mc {
+  max-width:960px;
+  margin:0 auto;
+  padding:3rem 2rem 7rem;
+  position:relative;
+  z-index:2;
+}
+
+/* ── SECTIONS ── */
+#matome-app .msec {
+  font-size:0.68rem;
+  font-weight:500;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:1.5rem;
+  padding-bottom:0.8rem;
+  border-bottom:1px solid var(--bd-l);
+}
+
+#matome-app .mbadge {
+  display:inline-block;
+  font-size:0.7rem;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  padding:0.5rem 1rem;
+  border-radius:8px;
+  margin-bottom:1.5rem;
+  background:var(--gold-d);
+  color:var(--gold-l);
+}
+
+/* ── FORMS ── */
+#matome-app .mfg {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2rem;
+  margin-bottom:2rem;
+}
+
+@media(max-width:760px) {
+  #matome-app .mfg {
+    grid-template-columns:1fr;
+    gap:1.25rem;
+  }
+}
+
+#matome-app .mf {
+  display:flex;
+  flex-direction:column;
+  gap:0.4rem;
+}
+
+#matome-app .mf label {
+  font-size:0.7rem;
+  font-weight:500;
+  color:var(--tx-s);
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+}
+
+#matome-app .mf label em {
+  display:block;
+  font-style:normal;
+  color:var(--tx-d);
+  font-size:0.65rem;
+  margin-top:0.2rem;
+}
+
+#matome-app .mf input,
+#matome-app .mf select {
+  width:100%;
+  background:rgba(255,255,255,0.035);
+  border:1px solid rgba(255,255,255,0.09);
+  border-radius:11px;
+  padding:0.8rem 1rem;
+  font-size:0.9375rem;
+  font-family:'DM Sans',sans-serif;
+  font-weight:400;
+  color:var(--tx);
+  transition:border-color 0.3s,background 0.3s,box-shadow 0.3s;
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+#matome-app .mf input::placeholder {
+  color:var(--tx-d);
+}
+
+#matome-app .mf input:focus,
+#matome-app .mf select:focus {
+  outline:none;
+  border-color:var(--gold);
+  background:rgba(201,168,76,0.05);
+  box-shadow:0 0 0 3px rgba(201,168,76,0.1);
+}
+
+#matome-app .mf select {
+  cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 1rem center;
+  padding-right:2.5rem;
+}
+
+#matome-app .mf select option {
+  background:#1a1c26;
+  color:var(--tx);
+}
+
+#matome-app .mfd {
+  display:flex;
+  flex-direction:column;
+  gap:0.4rem;
+}
+
+#matome-app .mfd label {
+  font-size:0.7rem;
+  font-weight:500;
+  color:var(--tx-s);
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+}
+
+#matome-app .mfd label em {
+  display:block;
+  font-style:normal;
+  color:var(--tx-d);
+  font-size:0.65rem;
+  margin-top:0.2rem;
+}
+
+#matome-app .mfd .dv {
+  padding:0.8rem 1rem;
+  border-bottom:1.5px dashed var(--bd-l);
+  font-size:0.9375rem;
+  font-weight:600;
+  color:var(--tx);
+}
+
+/* ── TOTAL BOX ── */
+#matome-app .mtotal {
+  margin-top:1.5rem;
+  padding:1.5rem 1.75rem;
+  background:var(--red-d);
+  border:1px solid rgba(248,113,113,0.18);
+  border-radius:14px;
+  display:flex;
+  align-items:baseline;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+
+#matome-app .mtotal .lbl {
+  font-size:0.72rem;
+  font-weight:500;
+  color:rgba(248,113,113,0.7);
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+}
+
+#matome-app .mtotal .val {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.5rem,4vw,2.5rem);
+  font-weight:600;
+  color:var(--red);
+  letter-spacing:-0.02em;
+  line-height:1;
+}
+
+/* ── CALC BOX ── */
+#matome-app .mcalc {
+  background:linear-gradient(140deg,#0c1018 0%,#16120a 100%);
+  border:1px solid rgba(201,168,76,0.28);
+  border-radius:20px;
+  padding:2rem 2.25rem;
+  margin-bottom:2rem;
+  position:relative;
+  overflow:hidden;
+}
+
+#matome-app .mcalc::before {
+  content:'';
+  position:absolute;
+  top:-25%;
+  right:-15%;
+  width:500px;
+  height:500px;
+  background:radial-gradient(circle,rgba(201,168,76,0.11) 0%,transparent 65%);
+  border-radius:50%;
+  pointer-events:none;
+}
+
+#matome-app .mcalc > * {
+  position:relative;
+  z-index:1;
+}
+
+#matome-app .mcalc-t {
+  font-size:0.72rem;
+  color:var(--tx-s);
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  margin-bottom:1.5rem;
+  font-weight:500;
+}
+
+#matome-app .mcalc-sl {
+  font-size:0.72rem;
+  padding:0.8rem 0 0.5rem;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--gold-l);
+  margin-top:1rem;
+  margin-bottom:0.75rem;
+}
+
+#matome-app .mcalc-sl.b {
+  color:var(--blue);
+}
+
+#matome-app .ml {
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-size:0.9375rem;
+  padding:0.5rem 0;
+  color:var(--tx-s);
+  gap:1rem;
+  transition:color 0.3s;
+}
+
+#matome-app .ml .ck {
+  flex:1;
+  color:var(--tx-s);
+  font-weight:400;
+}
+
+#matome-app .ml .cv {
+  white-space:nowrap;
+  font-size:0.9375rem;
+  color:var(--tx);
+  font-weight:500;
+}
+
+#matome-app .ml .plus {
+  color:var(--tx-d);
+  margin-right:0.5rem;
+}
+
+#matome-app .ml.subt {
+  border-top:1px dashed rgba(255,255,255,0.1);
+  margin-top:0.75rem;
+  padding-top:0.75rem;
+}
+
+#matome-app .ml.subt .ck {
+  color:var(--tx);
+  font-weight:600;
+  font-size:0.8rem;
+}
+
+#matome-app .ml.subt .cv {
+  font-weight:700;
+  font-size:1.25rem;
+}
+
+#matome-app .ml.pa {
+  padding-top:0.5rem;
+}
+
+#matome-app .ml.pa .ck {
+  color:var(--gold);
+  font-size:0.72rem;
+  font-weight:600;
+}
+
+#matome-app .ml.pa .cv {
+  color:var(--gold-l);
+  font-size:clamp(1.5rem,4vw,2rem);
+  font-weight:900;
+}
+
+#matome-app .ml.pb {
+  padding-top:0.5rem;
+}
+
+#matome-app .ml.pb .ck {
+  color:var(--blue);
+  font-size:0.72rem;
+  font-weight:600;
+}
+
+#matome-app .ml.pb .cv {
+  color:var(--blue);
+  font-size:clamp(1.5rem,4vw,2rem);
+  font-weight:900;
+}
+
+#matome-app .ml.tf {
+  border-top:2px solid rgba(255,255,255,0.15);
+  margin-top:1rem;
+  padding-top:1rem;
+}
+
+#matome-app .ml.tf .ck {
+  color:var(--tx);
+  font-weight:700;
+  font-size:0.875rem;
+  letter-spacing:0.05em;
+}
+
+#matome-app .ml.tf .cv {
+  color:var(--gold-l);
+  font-size:clamp(2rem,5vw,3.25rem);
+  font-weight:900;
+  letter-spacing:-0.02em;
+}
+
+#matome-app .mcsep {
+  border:none;
+  border-top:1px dashed rgba(255,255,255,0.1);
+  margin:1.5rem 0;
+}
+
+/* ── BUTTONS ── */
+#matome-app .mbtn {
+  width:100%;
+  padding:1rem 1.75rem;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold-l) 100%);
+  color:var(--ink);
+  font-family:'DM Sans',sans-serif;
+  font-weight:700;
+  font-size:0.9375rem;
+  letter-spacing:0.05em;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:opacity 0.3s,transform 0.25s,box-shadow 0.3s;
+  box-shadow:0 8px 28px rgba(201,168,76,0.25),0 2px 8px rgba(201,168,76,0.15);
+  touch-action:manipulation;
+}
+
+#matome-app .mbtn::before {
+  content:'';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);
+  transition:left 0.5s;
+}
+
+#matome-app .mbtn:hover::before {
+  left:100%;
+}
+
+#matome-app .mbtn:hover {
+  transform:translateY(-2px);
+  box-shadow:0 14px 40px rgba(201,168,76,0.35);
+}
+
+#matome-app .mbtn:active {
+  transform:translateY(0);
+}
+
+#matome-app .mbtn.sec {
+  background:transparent;
+  border:1px solid var(--bd-l);
+  color:var(--tx-s);
+  letter-spacing:0.04em;
+  box-shadow:none;
+  margin-bottom:0.75rem;
+}
+
+#matome-app .mbtn.sec:hover {
+  border-color:var(--bd);
+  color:var(--gold);
+  background:var(--gold-d);
+}
+
+/* ── COMPARISON GRID ── */
+#matome-app .mrg {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.75rem;
+  margin-bottom:2rem;
+}
+
+@media(max-width:640px) {
+  #matome-app .mrg {
+    grid-template-columns:1fr;
+  }
+}
+
+#matome-app .mrc {
+  border-radius:20px;
+  padding:2.25rem;
+  background:var(--sf);
+  border:1px solid var(--bd-l);
+  transition:all 0.3s;
+}
+
+#matome-app .mrc.before {
+  background:var(--red-d);
+  border-color:rgba(248,113,113,0.17);
+}
+
+#matome-app .mrc.after {
+  background:var(--green-d);
+  border-color:rgba(74,222,128,0.17);
+}
+
+#matome-app .mct {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem;
+  font-weight:600;
+  margin-bottom:1.25rem;
+  padding-bottom:1rem;
+  border-bottom:1px solid;
+}
+
+#matome-app .mrc.before .mct {
+  color:var(--red);
+  border-color:rgba(248,113,113,0.25);
+}
+
+#matome-app .mrc.after .mct {
+  color:var(--green);
+  border-color:rgba(74,222,128,0.25);
+}
+
+#matome-app .mrr {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0.6rem 0;
+  font-size:0.875rem;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  gap:0.5rem;
+}
+
+#matome-app .mrr:last-child {
+  border-bottom:none;
+}
+
+#matome-app .mrr .ri {
+  color:var(--tx-s);
+  flex:1;
+  line-height:1.4;
+  font-weight:400;
+}
+
+#matome-app .mrr .ra {
+  font-weight:600;
+  white-space:nowrap;
+  color:var(--tx);
+}
+
+#matome-app .mrr.tr {
+  border-top:1px solid rgba(255,255,255,0.12);
+  margin-top:0.75rem;
+  padding-top:0.75rem;
+  font-weight:700;
+}
+
+#matome-app .mrr.note {
+  font-size:0.75rem;
+  color:var(--tx-d);
+  font-style:italic;
+}
+
+#matome-app .mrr.zero .ra {
+  color:var(--green);
+  font-weight:700;
+}
+
+#matome-app .mrr.ssep {
+  border-top:1px dashed rgba(255,255,255,0.1);
+  margin-top:0.5rem;
+  padding-top:0.5rem;
+}
+
+#matome-app .mrc.before .mrr .ri {
+  color:rgba(248,113,113,0.7);
+}
+
+#matome-app .mrc.after .mrr .ri {
+  color:rgba(74,222,128,0.7);
+}
+
+#matome-app .mrc.before .mrr.tr .ra {
+  color:var(--red);
+  font-size:1.25rem;
+}
+
+#matome-app .mrc.after .mrr.tr .ra {
+  color:var(--green);
+  font-size:1.25rem;
+}
+
+/* ── ECONOMIA BOX ── */
+#matome-app .meco {
+  text-align:center;
+  padding:3.5rem 2rem;
+  background:linear-gradient(135deg,rgba(74,222,128,0.04) 0%,rgba(201,168,76,0.04) 100%);
+  border:1px solid rgba(74,222,128,0.14);
+  border-radius:20px;
+  margin-bottom:2rem;
+  position:relative;
+  overflow:hidden;
+}
+
+#matome-app .meco::before {
+  content:'';
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:480px;
+  height:480px;
+  background:radial-gradient(circle,rgba(74,222,128,0.055) 0%,transparent 65%);
+  border-radius:50%;
+  pointer-events:none;
+}
+
+#matome-app .meco > * {
+  position:relative;
+  z-index:1;
+}
+
+#matome-app .meco .elbl {
+  font-size:0.72rem;
+  font-weight:600;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--green);
+  margin-bottom:1rem;
+}
+
+#matome-app .meco .ebig {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.5rem,7vw,4.5rem);
+  font-weight:700;
+  color:var(--green);
+  letter-spacing:-0.03em;
+  line-height:1.1;
+  margin-bottom:1.25rem;
+}
+
+#matome-app .meco .esub {
+  font-size:0.9rem;
+  color:var(--tx-s);
+  font-weight:300;
+  max-width:400px;
+  margin:0 auto;
+  line-height:1.8;
+}
+
+/* ── RESULT BOX ── */
+#matome-app .mres {
+  margin-bottom:2rem;
+  font-size:0.875rem;
+  color:var(--tx-d);
+  line-height:1.8;
+  border:1px solid var(--bd-l);
+  border-radius:12px;
+  padding:1.5rem;
+  background:rgba(255,255,255,0.02);
+}
+
+#matome-app .mres strong {
+  color:var(--gold-l);
+  font-weight:600;
+}
+
+#matome-app .mres em {
+  color:var(--tx-s);
+  font-style:normal;
+  font-size:0.8rem;
+}
+
+/* ── PDF HEADER/FOOTER ── */
+#matome-app .mpdfh {
+  display:none;
+}
+
+#matome-app .mpdff {
+  display:none;
+}
+
+/* ── MOBILE ── */
+@media(max-width:600px) {
+  #matome-app .mc {
+    padding:2rem 1rem 5rem;
+  }
+
+  #matome-app .mh {
+    padding:1rem;
+  }
+
+  #matome-app .mh-logo {
+    font-size:1.25rem;
+  }
+
+  #matome-app .msteps {
+    top:60px;
+  }
+
+  #matome-app .mstep {
+    font-size:0.65rem;
+    padding:0.75rem;
+  }
+
+  #matome-app .mfg {
+    gap:1rem;
+  }
+
+  #matome-app .mf input,
+  #matome-app .mf select {
+    padding:0.75rem;
+    font-size:1rem;
+  }
+
+  #matome-app .mtotal {
+    flex-direction:column;
+    gap:0.5rem;
+  }
+
+  #matome-app .mtotal .val {
+    font-size:1.75rem;
+  }
+
+  #matome-app .mcalc {
+    padding:1.5rem;
+  }
+
+  #matome-app .ml {
+    font-size:0.875rem;
+  }
+
+  #matome-app .ml .cv {
+    font-size:0.875rem;
+  }
+
+  #matome-app .ml.pa .cv,
+  #matome-app .ml.pb .cv {
+    font-size:1.5rem;
+  }
+
+  #matome-app .ml.tf .cv {
+    font-size:2rem;
+  }
+
+  #matome-app .mbtn {
+    font-size:0.875rem;
+    padding:0.875rem;
+  }
+
+  #matome-app .mrg {
+    gap:1rem;
+  }
+
+  #matome-app .mrc {
+    padding:1.5rem;
+  }
+
+  #matome-app .meco {
+    padding:2rem 1.25rem;
+  }
+
+  #matome-app .meco .ebig {
+    font-size:2.25rem;
+  }
+
+  #matome-app .mres {
+    font-size:0.8rem;
+  }
+}
+
+/* ── PRINT ── */
+@media print {
+  @page {
+    margin:15mm 20mm;
+    size:A4 portrait;
+  }
+
+  #matome-app .msteps,
+  #matome-app .mh,
+  #matome-app .mbtn,
+  #matome-app .mtela-1c,
+  #matome-app .mtela-2c {
+    display:none !important;
+  }
+
+  #matome-app .mtela {
+    display:block !important;
+  }
+
+  #matome-app .mpdfh {
+    display:block !important;
+    border-bottom:3px solid var(--gold);
+    padding-bottom:1.5rem;
+    margin-bottom:2rem;
+  }
+
+  #matome-app .mpdfh .pl {
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.75rem;
+    font-weight:600;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+  }
+
+  #matome-app .mpdfh .pl strong {
+    color:var(--gold);
+  }
+
+  #matome-app .mpdfh .pt {
+    font-size:0.75rem;
+    color:var(--tx-d);
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    margin-top:0.5rem;
+  }
+
+  #matome-app .mpdfh .pc {
+    font-size:0.875rem;
+    color:var(--tx-d);
+    margin-top:0.75rem;
+  }
+
+  #matome-app .mrg {
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  #matome-app .mcalc,
+  #matome-app .meco,
+  #matome-app .mrc {
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  #matome-app .mcalc {
+    background:#f5f1e8 !important;
+    border-color:rgba(201,168,76,0.3) !important;
+  }
+
+  #matome-app .mcalc .ml .cv,
+  #matome-app .mcalc .ml .ck {
+    color:var(--ink) !important;
+  }
+
+  #matome-app .mcalc .mcalc-sl,
+  #matome-app .mcalc .mcalc-t {
+    color:var(--ink) !important;
+  }
+
+  #matome-app .meco {
+    background:#f5fff8 !important;
+    border-color:rgba(74,222,128,0.25) !important;
+  }
+
+  #matome-app .meco .elbl,
+  #matome-app .meco .ebig {
+    color:#006600 !important;
+  }
+
+  #matome-app .meco .esub {
+    color:rgba(17,17,17,0.6) !important;
+  }
+
+  #matome-app .mrc.before {
+    background:#fff5f5 !important;
+    border-color:rgba(185,28,28,0.2) !important;
+  }
+
+  #matome-app .mrc.after {
+    background:#f5fff8 !important;
+    border-color:rgba(21,128,61,0.2) !important;
+  }
+
+  #matome-app .mct {
+    color:#111 !important;
+  }
+
+  #matome-app .mrc.before .mct {
+    color:#b91c1c !important;
+  }
+
+  #matome-app .mrc.after .mct {
+    color:#15803d !important;
+  }
+
+  #matome-app .mrr .ri {
+    color:#555 !important;
+  }
+
+  #matome-app .mrr .ra {
+    color:#111 !important;
+  }
+
+  #matome-app .mpdff {
+    display:block !important;
+    margin-top:1.5rem;
+    font-size:0.7rem;
+    color:var(--tx-d);
+    text-align:center;
+    border-top:1px solid var(--bd-l);
+    padding-top:1rem;
+  }
+
+  #matome-app {
+    background:#fff !important;
+    color:#111 !important;
+  }
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#08090e;">
+
+<div id="matome-app">
+  <!-- HEADER -->
+  <div class="mh">
+    <div class="mh-logo"><strong>MATOME</strong></div>
+    <div class="mh-tag">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div>
+  </div>
+
+  <!-- PROGRESS STEPS -->
+  <div class="msteps">
+    <div class="mstep active" id="ms1">① Situação Atual</div>
+    <div class="mstep" id="ms2">② Proposta</div>
+    <div class="mstep" id="ms3">③ Resultado</div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ TELA 1 ════ -->
+  <div class="mtela active" id="mt1">
+    <div class="mc mtela-1c">
+      <div class="msec">① Dados do cliente · お客様情報</div>
+      <div class="mfg">
+        <div class="mf"><label>Nome <em>お名前</em></label><input type="text" id="mn-nome" placeholder="Yamamoto Hiroshi" autocomplete="off"></div>
+        <div class="mf"><label>Idade <em>年齢</em></label><input type="number" id="mn-idade" placeholder="35" min="18" max="99" inputmode="numeric"></div>
+        <div class="mf" style="grid-column:1/-1;"><label>Data da simulação <em>シミュレーション日</em></label><input type="date" id="mn-data"></div>
+      </div>
+
+      <div class="msec">Parcelas mensais atuais · 現在の月額支出</div>
+      <div class="mfg">
+        <div class="mf"><label>住宅ローン <em>Financiamento da casa</em></label><input type="text" id="mn-fin" data-myen inputmode="numeric" placeholder="¥ 90.000"></div>
+        <div class="mf"><label>リフォームローン <em>Empréstimo reforma</em></label><input type="text" id="mn-refl" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>車ローン <em>Carro</em></label><input type="text" id="mn-car" data-myen inputmode="numeric" placeholder="¥ 40.000"></div>
+        <div class="mf"><label>クレジット <em>Cartão de crédito</em></label><input type="text" id="mn-crt" data-myen inputmode="numeric" placeholder="¥ 30.000"></div>
+        <div class="mf"><label>電気代 <em>Conta de luz</em></label><input type="text" id="mn-luz" data-myen inputmode="numeric" placeholder="¥ 20.000"></div>
+        <div class="mf"><label>ガス代 <em>Conta de gás</em></label><input type="text" id="mn-gas" data-myen inputmode="numeric" placeholder="¥ 15.000"></div>
+        <div class="mf"><label>その他 1 <em>Outros 1</em></label><input type="text" id="mn-out" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>その他 2 <em>Outros 2</em></label><input type="text" id="mn-out2" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+      </div>
+
+      <div class="mtotal">
+        <span class="lbl">Total mensal atual · 現在の月額合計</span>
+        <span class="val" id="mn-total">¥ 0</span>
+      </div>
+
+      <div class="msec">Saldo devedor · 残債合計</div>
+      <div class="mfg">
+        <div class="mf"><label>残債 住宅ローン <em>Saldo devedor casa</em></label><input type="text" id="mn-rcasa" data-myen inputmode="numeric" placeholder="¥ 15.000.000"></div>
+        <div class="mf"><label>残債 リフォームローン <em>Saldo emprést. reforma</em></label><input type="text" id="mn-rrefl" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>残債 車ローン <em>Saldo devedor carro</em></label><input type="text" id="mn-rcar" data-myen inputmode="numeric" placeholder="¥ 2.000.000"></div>
+        <div class="mf"><label>残債 クレジット <em>Saldo cartão</em></label><input type="text" id="mn-rcrt" data-myen inputmode="numeric" placeholder="¥ 500.000"></div>
+        <div class="mf"><label>その他ローン 1 <em>Outros empréstimos 1</em></label><input type="text" id="mn-rout" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>その他ローン 2 <em>Outros empréstimos 2</em></label><input type="text" id="mn-rout2" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+      </div>
+
+      <button class="mbtn" data-mact="t1">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ TELA 2 ════ -->
+  <div class="mtela" id="mt2">
+    <div class="mc mtela-2c">
+      <span class="mbadge">Parte A — 住宅ローン + Obras</span>
+      <div class="msec">Casa + Reforma / Solar / Obras · 住宅ローン条件</div>
+
+      <div class="mfg">
+        <div class="mfd"><label>残債 住宅ローン <em>Saldo casa (da Tela 1)</em></label><div class="dv" id="md-rcasa">¥ 0</div></div>
+        <div class="mfd"><label>残債 リフォームローン <em>Saldo emprést. reforma (da Tela 1)</em></label><div class="dv" id="md-rrefl">¥ 0</div></div>
+      </div>
+
+      <div class="mfg">
+        <div class="mf"><label>リフォーム <em>Reforma</em></label><input type="text" id="mn-ref" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>外構工事 <em>Área externa</em></label><input type="text" id="mn-ext" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>太陽光発電 <em>Painel solar</em></label><input type="text" id="mn-sol" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+        <div class="mf"><label>その他工事 <em>Outras obras</em></label><input type="text" id="mn-oob" data-myen inputmode="numeric" placeholder="¥ 0"></div>
+      </div>
+
+      <div class="mfg">
+        <div class="mf"><label>金利 Casa <em>Taxa de juros ao ano (%)</em></label><input type="number" id="mn-txcasa" value="0" min="0.1" max="20" step="0.01" inputmode="decimal"></div>
+        <div class="mf"><label>返済期間 Casa <em>Prazo em anos (máx. 50)</em></label><input type="number" id="mn-pzcasa" value="35" min="1" max="50" step="1" inputmode="numeric"></div>
+        <div class="mf"><label>太陽光発電 <em>Elimina conta de luz?</em></label><select id="mn-selim"><option value="1">✅ Sim — elimina luz</option><option value="0">❌ Não incluído</option></select></div>
+        <div class="mf"><label>オール電化 <em>Elimina conta de gás?</em></label><select id="mn-aelec"><option value="0">❌ Não incluído</option><option value="1">✅ Sim — elimina gás</option></select></div>
+      </div>
+
+      <span class="mbadge">Parte B — まとめ融資 (Dívidas)</span>
+      <div class="msec">Dívidas consolidadas · まとめ項目</div>
+
+      <div class="mfg">
+        <div class="mfd"><label>残債 車ローン <em>Saldo carro (da Tela 1)</em></label><div class="dv" id="md-rcar">¥ 0</div></div>
+        <div class="mfd"><label>残債 クレジット <em>Saldo cartão (da Tela 1)</em></label><div class="dv" id="md-rcrt">¥ 0</div></div>
+        <div class="mfd"><label>その他ローン 1 <em>Outros emprést. 1 (da Tela 1)</em></label><div class="dv" id="md-rout">¥ 0</div></div>
+        <div class="mfd"><label>その他ローン 2 <em>Outros emprést. 2 (da Tela 1)</em></label><div class="dv" id="md-rout2">¥ 0</div></div>
+      </div>
+
+      <div class="mfg">
+        <div class="mf"><label>金利 MATOME <em>Taxa de juros ao ano (%)</em></label><input type="number" id="mn-txmat" value="0" min="0.1" max="20" step="0.01" inputmode="decimal"></div>
+        <div class="mf"><label>返済期間 MATOME <em>Prazo em anos (máx. 50)</em></label><input type="number" id="mn-pzmat" value="10" min="1" max="50" step="1" inputmode="numeric"></div>
+      </div>
+
+      <!-- CÁLCULOS AUTOMÁTICOS -->
+      <div class="mcalc">
+        <div class="mcalc-t">Composição do novo financiamento · 融資総額（自動計算）</div>
+        <div class="mcalc-sl a">▸ Parte A — 住宅ローン + Obras</div>
+        <div class="ml"><span class="ck">残債 住宅ローン <em style="color:#888;font-size:10px">(casa)</em></span><span class="cv" id="mc-rcasa">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>残債 リフォームローン <em style="color:#888;font-size:10px">(emprést. reforma)</em></span><span class="cv" id="mc-rrefl">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>リフォーム <em style="color:#888;font-size:10px">(nova reforma)</em></span><span class="cv" id="mc-ref">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>外構工事 <em style="color:#888;font-size:10px">(área externa)</em></span><span class="cv" id="mc-ext">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>太陽光発電 <em style="color:#888;font-size:10px">(painel solar)</em></span><span class="cv" id="mc-sol">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>その他工事 <em style="color:#888;font-size:10px">(outras obras)</em></span><span class="cv" id="mc-oob">¥ 0</span></div>
+        <div class="ml subt"><span class="ck">Subtotal Parte A</span><span class="cv" id="mc-tota">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>Parte Burocrática <em style="color:#888;font-size:10px">(taxas banco + refin. + escrivão)</em></span><span class="cv" id="mc-buroc">¥ 0</span></div>
+        <div class="ml subt"><span class="ck">Total A (final)</span><span class="cv" id="mc-tota-final">¥ 0</span></div>
+        <div class="ml pa"><span class="ck" id="mc-lbla">Parcela A · 35 anos · 2,84%</span><span class="cv" id="mc-pmta">¥ 0</span></div>
+        <hr class="mcsep">
+        <div class="mcalc-sl b">▸ Parte B — まとめ融資 (Dívidas)</div>
+        <div class="ml"><span class="ck">残債 車ローン <em style="color:#888;font-size:10px">(carro)</em></span><span class="cv" id="mc-rcar">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>残債 クレジット <em style="color:#888;font-size:10px">(cartão)</em></span><span class="cv" id="mc-rcrt">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>その他ローン 1 <em style="color:#888;font-size:10px">(outros 1)</em></span><span class="cv" id="mc-rout">¥ 0</span></div>
+        <div class="ml"><span class="ck"><span class="plus">+</span>その他ローン 2 <em style="color:#888;font-size:10px">(outros 2)</em></span><span class="cv" id="mc-rout2">¥ 0</span></div>
+        <div class="ml subt"><span class="ck">Total Parte B</span><span class="cv" id="mc-totb">¥ 0</span></div>
+        <div class="ml pb"><span class="ck" id="mc-lblb">Parcela B · 10 anos · 3,29%</span><span class="cv" id="mc-pmtb">¥ 0</span></div>
+        <div class="ml tf"><span class="ck">NOVA PARCELA TOTAL · 新月額合計</span><span class="cv" id="mc-tott">¥ 0</span></div>
+      </div>
+
+      <button class="mbtn sec" data-mact="t2-back">← Voltar</button>
+      <button class="mbtn" data-mact="t2">Ver resultado →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ TELA 3 ════ -->
+  <div class="mtela" id="mt3">
+    <div class="mpdfh mc">
+      <div class="pl"><strong>MATOME</strong></div>
+      <div class="pt">まとめ · SOLUCIONANDO SUA DÍVIDA NO JAPÃO 🇯🇵</div>
+      <div class="pc" id="mn-pdfci"></div>
+    </div>
+
+    <div class="mc">
+      <div class="msec" id="mn-restit">③ Resultado</div>
+
+      <!-- COMPARATIVO ANTES/DEPOIS -->
+      <div class="mrg">
+        <div class="mrc before">
+          <div class="mct">❌ Situação Atual · 現状</div>
+          <div class="mrr"><span class="ri">住宅ローン <em style="font-size:10px;color:#aaa">(financiamento)</em></span><span class="ra" id="mr-fin">—</span></div>
+          <div class="mrr" id="mr-refl-row"><span class="ri">リフォームローン <em style="font-size:10px;color:#aaa">(emprést. reforma)</em></span><span class="ra" id="mr-refl">—</span></div>
+          <div class="mrr"><span class="ri">車ローン <em style="font-size:10px;color:#aaa">(carro)</em></span><span class="ra" id="mr-car">—</span></div>
+          <div class="mrr"><span class="ri">クレジット <em style="font-size:10px;color:#aaa">(cartão)</em></span><span class="ra" id="mr-crt">—</span></div>
+          <div class="mrr"><span class="ri">電気代 <em style="font-size:10px;color:#aaa">(luz)</em></span><span class="ra" id="mr-luz">—</span></div>
+          <div class="mrr"><span class="ri">ガス代 <em style="font-size:10px;color:#aaa">(gás)</em></span><span class="ra" id="mr-gas">—</span></div>
+          <div class="mrr" id="mr-outrow"><span class="ri">その他 1 <em style="font-size:10px;color:#aaa">(outros 1)</em></span><span class="ra" id="mr-out">—</span></div>
+          <div class="mrr" id="mr-out2row"><span class="ri">その他 2 <em style="font-size:10px;color:#aaa">(outros 2)</em></span><span class="ra" id="mr-out2">—</span></div>
+          <div class="mrr tr"><span class="ri">TOTAL</span><span class="ra" id="mr-tantes" style="color:var(--red);font-size:1.1rem;">—</span></div>
+        </div>
+
+        <div class="mrc after">
+          <div class="mct">✅ Com MATOME · まとめ後</div>
+          <div class="mrr">
+            <span class="ri" style="color:var(--gold);">Parte A · 住宅+Obras<em id="mr-lbla" style="font-size:10px;color:#888;display:block"></em></span>
+            <span class="ra" id="mr-pmta" style="color:var(--gold);">—</span>
+          </div>
+          <div class="mrr ssep">
+            <span class="ri" style="color:var(--blue);">Parte B · まとめ<em id="mr-lblb" style="font-size:10px;color:#888;display:block"></em></span>
+            <span class="ra" id="mr-pmtb" style="color:var(--blue);">—</span>
+          </div>
+          <div class="mrr zero"><span class="ri">電気代 <em id="mr-sollbl" style="font-size:10px;color:#888"></em></span><span class="ra" id="mr-luz2">—</span></div>
+          <div class="mrr zero"><span class="ri">ガス代 <em id="mr-gaslbl" style="font-size:10px;color:#888"></em></span><span class="ra" id="mr-gas2" style="color:var(--green);">—</span></div>
+          <div class="mrr note"><span>車・クレジット・その他ローン: まとめ に統合済<br><em style="font-size:10px">(carro, cartão e outros consolidados na Parte B)</em></span></div>
+          <div class="mrr tr"><span class="ri">TOTAL</span><span class="ra" id="mr-tdep" style="color:var(--green);font-size:1.1rem;">—</span></div>
+        </div>
+      </div>
+
+      <!-- DESTAQUE ECONOMIA -->
+      <div class="meco">
+        <div class="elbl">💰 Economia mensal · 月の節約額</div>
+        <div class="ebig" id="mn-eco">—</div>
+        <div class="esub" id="mn-ecosub">—</div>
+      </div>
+
+      <!-- RESUMO -->
+      <div class="mres" id="mn-resumo"></div>
+
+      <!-- BOTÕES -->
+      <button class="mbtn sec" data-mact="t3-back">← Voltar</button>
+      <button class="mbtn" data-mact="pdf">📸 Baixar Imagem PNG</button>
+    </div>
+
+    <div class="mpdff mc">Simulação gerada pelo Simulador MATOME &nbsp;·&nbsp; Valores ilustrativos sujeitos à análise de crédito</div>
+  </div>
+
+</div><!-- /matome-app -->
+
+<script>
+(function(){
+'use strict';
+
+// ── STATE ──
+var S={
+  nome:'',idade:'',data:'',
+  fin:0,refl:0,car:0,crt:0,luz:0,gas:0,out:0,out2:0,
+  rCasa:0,rRefl:0,rCar:0,rCrt:0,rOut:0,rOut2:0,
+  ref:0,ext:0,sol:0,oob:0,
+  txCasa:2.84,pzCasa:35,txMat:3.29,pzMat:10,
+  sElim:true,aDenka:false
+};
+
+// ── UTILITIES ──
+function py(s){
+  if(!s)return 0;
+  return parseInt(String(s).replace(/[¥\s\.]/g,''),10)||0;
+}
+
+function fy(n){
+  var v=Math.round(n);
+  if(!v)return'¥ 0';
+  return'¥ '+v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
+function mask(el){
+  var r=py(el.value);
+  el.value=r?fy(r):'';
+}
+
+function bindYen(cont){
+  cont.querySelectorAll('input[data-myen]').forEach(function(el){
+    el.addEventListener('input',function(){
+      el.value=el.value.replace(/[^\d]/g,'');
+    });
+    el.addEventListener('blur',function(){
+      mask(el);
+    });
+    el.addEventListener('focus',function(){
+      var r=py(el.value);
+      el.value=r||'';
+    });
+  });
+}
+
+// ── AMORTIZATION FORMULA ──
+function pmt(p,ar,y){
+  if(!p||!y)return 0;
+  var r=ar/12/100,n=y*12;
+  if(r===0)return Math.round(p/n);
+  return Math.round(p*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1));
+}
+
+// ── NAVIGATION ──
+function goTo(n){
+  document.querySelectorAll('#matome-app .mtela').forEach(function(t){
+    t.classList.remove('active');
+  });
+  document.getElementById('mt'+n).classList.add('active');
+
+  document.querySelectorAll('#matome-app .mstep').forEach(function(s,i){
+    s.classList.remove('active','done');
+    if(i+1<n)s.classList.add('done');
+    else if(i+1===n)s.classList.add('active');
+  });
+
+  var app=document.getElementById('matome-app');
+  if(app)app.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function g(id){
+  return document.getElementById(id);
+}
+
+// ── READ TELA 1 ──
+function lerT1(){
+  S.nome=g('mn-nome').value.trim();
+  S.idade=g('mn-idade').value;
+  S.data=g('mn-data').value;
+
+  S.fin=py(g('mn-fin').value);
+  S.refl=py(g('mn-refl').value);
+  S.car=py(g('mn-car').value);
+  S.crt=py(g('mn-crt').value);
+  S.luz=py(g('mn-luz').value);
+  S.gas=py(g('mn-gas').value);
+  S.out=py(g('mn-out').value);
+  S.out2=py(g('mn-out2').value);
+
+  S.rCasa=py(g('mn-rcasa').value);
+  S.rRefl=py(g('mn-rrefl').value);
+  S.rCar=py(g('mn-rcar').value);
+  S.rCrt=py(g('mn-rcrt').value);
+  S.rOut=py(g('mn-rout').value);
+  S.rOut2=py(g('mn-rout2').value);
+}
+
+// ── READ TELA 2 ──
+function lerT2(){
+  S.ref=py(g('mn-ref').value);
+  S.ext=py(g('mn-ext').value);
+  S.sol=py(g('mn-sol').value);
+  S.oob=py(g('mn-oob').value);
+
+  S.txCasa=parseFloat(g('mn-txcasa').value)||0;
+  S.pzCasa=parseInt(g('mn-pzcasa').value)||35;
+  S.txMat=parseFloat(g('mn-txmat').value)||0;
+  S.pzMat=parseInt(g('mn-pzmat').value)||10;
+
+  S.sElim=g('mn-selim').value==='1';
+  S.aDenka=g('mn-aelec').value==='1';
+}
+
+// ── UPDATE TOTAL TELA 1 ──
+function atuTotal(){
+  var t=['mn-fin','mn-refl','mn-car','mn-crt','mn-luz','mn-gas','mn-out','mn-out2']
+    .reduce(function(s,id){return s+py(g(id).value);},0);
+  g('mn-total').textContent=fy(t);
+}
+
+// ── UPDATE CALC TELA 2 ──
+function atuCalc(){
+  lerT2();
+
+  var tABase=S.rCasa+S.rRefl+S.ref+S.ext+S.sol+S.oob;
+  var tB=S.rCar+S.rCrt+S.rOut+S.rOut2;
+  var gT=tABase+tB;
+
+  // Taxas burocráticas (2.2% + maior de 1.65% ou 330k + 300k de escrivão)
+  var buroc=Math.round(gT*0.022)+Math.max(330000,Math.round(gT*0.0165))+300000;
+
+  var tA=tABase+buroc;
+
+  var pA=pmt(tA,S.txCasa,S.pzCasa);
+  var pB=pmt(tB,S.txMat,S.pzMat);
+
+  var tc=S.txCasa.toFixed(2).replace('.',',');
+  var tm=S.txMat.toFixed(2).replace('.',',');
+
+  // Update calc box
+  g('mc-rcasa').textContent=fy(S.rCasa);
+  g('mc-rrefl').textContent=fy(S.rRefl);
+  g('mc-ref').textContent=fy(S.ref);
+  g('mc-ext').textContent=fy(S.ext);
+  g('mc-sol').textContent=fy(S.sol);
+  g('mc-oob').textContent=fy(S.oob);
+  g('mc-tota').textContent=fy(tABase);
+  g('mc-buroc').textContent=fy(buroc);
+  g('mc-tota-final').textContent=fy(tA);
+  g('mc-pmta').textContent=fy(pA);
+  g('mc-lbla').textContent='Parcela A · '+S.pzCasa+' anos · '+tc+'%';
+
+  g('mc-rcar').textContent=fy(S.rCar);
+  g('mc-rcrt').textContent=fy(S.rCrt);
+  g('mc-rout').textContent=fy(S.rOut);
+  g('mc-rout2').textContent=fy(S.rOut2);
+  g('mc-totb').textContent=fy(tB);
+  g('mc-pmtb').textContent=fy(pB);
+  g('mc-lblb').textContent='Parcela B · '+S.pzMat+' anos · '+tm+'%';
+  g('mc-tott').textContent=fy(pA+pB);
+}
+
+// ── RENDER TELA 3 ──
+function renderT3(){
+  var tAntes=S.fin+S.refl+S.car+S.crt+S.luz+S.gas+S.out+S.out2;
+
+  var tABase=S.rCasa+S.rRefl+S.ref+S.ext+S.sol+S.oob;
+  var tB=S.rCar+S.rCrt+S.rOut+S.rOut2;
+  var gT=tABase+tB;
+
+  var buroc=Math.round(gT*0.022)+Math.max(330000,Math.round(gT*0.0165))+300000;
+  var tA=tABase+buroc;
+
+  var pA=pmt(tA,S.txCasa,S.pzCasa);
+  var pB=pmt(tB,S.txMat,S.pzMat);
+
+  var lD=S.sElim?0:S.luz;
+  var gD=S.aDenka?0:S.gas;
+  var tDep=pA+pB+lD+gD;
+  var eco=tAntes-tDep;
+
+  var tc=S.txCasa.toFixed(2).replace('.',',');
+  var tm=S.txMat.toFixed(2).replace('.',',');
+
+  var nL=S.nome?' · '+S.nome:'';
+  var iL=S.idade?', '+S.idade+' anos':'';
+
+  g('mn-restit').textContent='③ Resultado'+nL+iL;
+
+  // Antes
+  g('mr-fin').textContent=fy(S.fin);
+
+  var rlRow=g('mr-refl-row');
+  if(S.refl>0){
+    g('mr-refl').textContent=fy(S.refl);
+    rlRow.style.display='';
+  }else{
+    rlRow.style.display='none';
+  }
+
+  g('mr-car').textContent=fy(S.car);
+  g('mr-crt').textContent=fy(S.crt);
+  g('mr-luz').textContent=fy(S.luz);
+  g('mr-gas').textContent=fy(S.gas);
+
+  var oRow=g('mr-outrow');
+  if(S.out>0){
+    g('mr-out').textContent=fy(S.out);
+    oRow.style.display='';
+  }else{
+    oRow.style.display='none';
+  }
+
+  var o2Row=g('mr-out2row');
+  if(S.out2>0){
+    g('mr-out2').textContent=fy(S.out2);
+    o2Row.style.display='';
+  }else{
+    o2Row.style.display='none';
+  }
+
+  g('mr-tantes').textContent=fy(tAntes);
+
+  // Depois
+  g('mr-lbla').textContent=S.pzCasa+' anos · '+tc+'%';
+  g('mr-pmta').textContent=fy(pA);
+
+  g('mr-lblb').textContent=S.pzMat+' anos · '+tm+'%';
+  g('mr-pmtb').textContent=fy(pB);
+
+  g('mr-sollbl').textContent=S.sElim?'(painel solar)':'';
+  g('mr-luz2').textContent=fy(lD);
+
+  g('mr-gaslbl').textContent=S.aDenka?'(all-electric)':'';
+  g('mr-gas2').textContent=fy(gD);
+
+  g('mr-tdep').textContent=fy(tDep);
+
+  // Economia
+  g('mn-eco').textContent=fy(eco)+' / mês';
+  g('mn-ecosub').innerHTML=fy(eco*12)+' por ano<br>'+fy(eco*120)+' em 10 anos';
+
+  // Resumo
+  var dF=S.data?new Date(S.data+'T12:00').toLocaleDateString('pt-BR'):'—';
+  var ex=[
+    S.ref>0?'Reforma: '+fy(S.ref):'',
+    S.ext>0?'Área ext.: '+fy(S.ext):'',
+    S.sol>0?'Solar: '+fy(S.sol):'',
+    S.oob>0?'Outros: '+fy(S.oob):''
+  ].filter(Boolean).join(' | ');
+
+  g('mn-resumo').innerHTML=
+    '<strong>Proposta MATOME</strong> · '+dF+'<br>'+
+    '<span style="color:var(--gold);">Parte A (Casa+Obras):</span> '+fy(tA)+' · '+S.pzCasa+' anos · '+tc+'% → <strong>'+fy(pA)+'/mês</strong>'+(ex?' <em style="color:#aaa">('+ex+')</em>':'')+'<br>'+
+    '<span style="color:var(--blue);">Parte B (Dívidas):</span> '+fy(tB)+' · '+S.pzMat+' anos · '+tm+'% → <strong>'+fy(pB)+'/mês</strong>';
+
+  g('mn-pdfci').textContent=[S.nome,S.idade?S.idade+' anos':'','Simulação: '+dF].filter(Boolean).join(' · ');
+}
+
+// ── INIT ──
+function init(){
+  g('mn-data').value=new Date().toISOString().split('T')[0];
+
+  bindYen(g('mt1'));
+  bindYen(g('mt2'));
+
+  // Tela 1: listen to changes
+  ['mn-fin','mn-refl','mn-car','mn-crt','mn-luz','mn-gas','mn-out','mn-out2'].forEach(function(id){
+    g(id).addEventListener('input',atuTotal);
+    g(id).addEventListener('blur',atuTotal);
+  });
+
+  // Tela 2: listen to changes
+  ['mn-ref','mn-ext','mn-sol','mn-oob'].forEach(function(id){
+    g(id).addEventListener('input',atuCalc);
+    g(id).addEventListener('blur',atuCalc);
+  });
+
+  ['mn-txcasa','mn-txmat','mn-pzcasa','mn-pzmat'].forEach(function(id){
+    g(id).addEventListener('input',atuCalc);
+  });
+
+  ['mn-selim','mn-aelec'].forEach(function(id){
+    g(id).addEventListener('change',atuCalc);
+  });
+
+  // Navigation
+  document.getElementById('matome-app').addEventListener('click',function(e){
+    var btn=e.target.closest('[data-mact]');
+    if(!btn)return;
+    e.preventDefault();
+
+    var a=btn.getAttribute('data-mact');
+
+    if(a==='t1'){
+      lerT1();
+      g('md-rcasa').textContent=fy(S.rCasa)||'¥ 0';
+      g('md-rrefl').textContent=fy(S.rRefl)||'¥ 0';
+      g('md-rcar').textContent=fy(S.rCar)||'¥ 0';
+      g('md-rcrt').textContent=fy(S.rCrt)||'¥ 0';
+      g('md-rout').textContent=fy(S.rOut)||'¥ 0';
+      g('md-rout2').textContent=fy(S.rOut2)||'¥ 0';
+      goTo(2);
+      atuCalc();
+    }
+
+    if(a==='t2-back'){
+      goTo(1);
+    }
+
+    if(a==='t2'){
+      lerT1();
+      lerT2();
+      renderT3();
+      goTo(3);
+    }
+
+    if(a==='t3-back'){
+      goTo(2);
+    }
+
+    if(a==='pdf'){
+      lerT1();
+      lerT2();
+
+      var btn=e.target.closest('[data-mact="pdf"]');
+      if(btn){
+        btn.disabled=true;
+        btn.textContent='⏳ Gerando imagem...';
+      }
+
+      if(typeof html2canvas!=='undefined'){
+        var el=document.getElementById('mt3');
+        if(!el){
+          alert('Resultado não encontrado');
+          if(btn){
+            btn.disabled=false;
+            btn.textContent='📸 Baixar Imagem PNG';
+          }
+          return;
+        }
+
+        setTimeout(function(){
+          html2canvas(el,{
+            allowTaint:true,
+            useCORS:true,
+            scale:1,
+            backgroundColor:'#08090e',
+            logging:false
+          }).then(function(canvas){
+            var link=document.createElement('a');
+            link.href=canvas.toDataURL('image/png');
+            link.download='MATOME-'+(S.nome||'simulacao').replace(/\s+/g,'_')+'-'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            if(btn){
+              btn.disabled=false;
+              btn.textContent='📸 Baixar Imagem PNG';
+            }
+          }).catch(function(err){
+            console.error('Erro:',err);
+            alert('Erro ao gerar imagem. Tente novamente.');
+            if(btn){
+              btn.disabled=false;
+              btn.textContent='📸 Baixar Imagem PNG';
+            }
+          });
+        },200);
+      }else{
+        alert('Biblioteca não carregada. Recarregue a página.');
+        if(btn){
+          btn.disabled=false;
+          btn.textContent='📸 Baixar Imagem PNG';
+        }
+      }
+    }
+  });
+}
+
+// ── RUN INIT ──
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',init);
+}else{
+  init();
+}
+
+})();
+</script>
+
+<!-- HTML2CANVAS para exportar PNG -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</body>
+</html>
