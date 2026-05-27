@@ -1,12 +1,15 @@
 from anthropic import Anthropic
 from bot.config import ANTHROPIC_API_KEY
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 class ClientValidator:
     def __init__(self):
         self.client = Anthropic()
         self.conversation_history = []
+        self._executor = ThreadPoolExecutor(max_workers=1)
 
-    def validate_input(self, user_input: str, block: str) -> dict:
+    async def validate_input(self, user_input: str, block: str) -> dict:
         # Prompts específicos para cada bloco
         block_prompts = {
             "personal": """Você está coletando informações PESSOAIS do CLIENTE para aluguel de imóvel no Japão.
@@ -69,11 +72,16 @@ Para a informação recebida:
             "content": user_input
         })
 
-        response = self.client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=1024,
-            system=system_prompt,
-            messages=self.conversation_history
+        # Execute API call in thread pool to avoid blocking
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            self._executor,
+            lambda: self.client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1024,
+                system=system_prompt,
+                messages=self.conversation_history
+            )
         )
 
         assistant_message = response.content[0].text

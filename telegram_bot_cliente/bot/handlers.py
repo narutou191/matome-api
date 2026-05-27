@@ -45,8 +45,11 @@ Qual é o nome completo do cliente?
         block_name = self.blocks[current_block] if current_block < len(self.blocks) else "special"
 
         # Validar entrada com Claude
-        result = validator.validate_input(user_input, block_name)
-        await update.message.reply_text(result["text"])
+        try:
+            result = await validator.validate_input(user_input, block_name)
+            await update.message.reply_text(result["text"])
+        except Exception as e:
+            await update.message.reply_text(f"❌ Erro ao processar: {str(e)}\n\nTente novamente.")
 
         # Preparar próxima pergunta ou bloco
         next_prompts = {
