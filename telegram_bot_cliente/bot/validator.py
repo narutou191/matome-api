@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 class ClientValidator:
     def __init__(self):
-        self.client = Anthropic()
+        self.client = Anthropic(api_key=ANTHROPIC_API_KEY)
         self.conversation_history = []
         self._executor = ThreadPoolExecutor(max_workers=1)
 
