@@ -764,35 +764,58 @@
         // PDF
         window.simGerarPDF = function() {
             const data = window.simData;
+            if (!data) {
+                alert('Execute uma simulação primeiro!');
+                return;
+            }
 
-            document.getElementById('sim-pdf-date').textContent = new Date().toLocaleDateString('pt-BR');
-            document.getElementById('sim-pdf-datetime').textContent = new Date().toLocaleString('pt-BR');
-            document.getElementById('sim-pdf-client').textContent = data.clientName;
-            document.getElementById('sim-pdf-propertyValue').textContent = formatarMoeda(data.propertyValue);
-            document.getElementById('sim-pdf-totalCustos').textContent = formatarMoeda(data.totalCustos);
-            document.getElementById('sim-pdf-loanAmount').textContent = formatarMoeda(data.valorEmprestimo);
+            // Preencher dados
+            try {
+                document.getElementById('sim-pdf-date').textContent = new Date().toLocaleDateString('pt-BR');
+                document.getElementById('sim-pdf-datetime').textContent = new Date().toLocaleString('pt-BR');
+                document.getElementById('sim-pdf-client').textContent = data.clientName;
+                document.getElementById('sim-pdf-propertyValue').textContent = formatarMoeda(data.propertyValue);
+                document.getElementById('sim-pdf-totalCustos').textContent = formatarMoeda(data.totalCustos);
+                document.getElementById('sim-pdf-loanAmount').textContent = formatarMoeda(data.valorEmprestimo);
 
-            document.getElementById('sim-pdf-parcela1').textContent = formatarMoeda(data.parcela1);
-            document.getElementById('sim-pdf-parcela2').textContent = formatarMoeda(data.parcela2);
-            document.getElementById('sim-pdf-parcela3').textContent = formatarMoeda(data.parcela3);
+                document.getElementById('sim-pdf-parcela1').textContent = formatarMoeda(data.parcela1);
+                document.getElementById('sim-pdf-parcela2').textContent = formatarMoeda(data.parcela2);
+                document.getElementById('sim-pdf-parcela3').textContent = formatarMoeda(data.parcela3);
 
-            document.getElementById('sim-pdf-m-parcela1').textContent = formatarMoeda(data.parcela1);
-            document.getElementById('sim-pdf-t-parcela1').textContent = formatarMoeda(data.total1);
-            document.getElementById('sim-pdf-m-parcela2').textContent = formatarMoeda(data.parcela2);
-            document.getElementById('sim-pdf-t-parcela2').textContent = formatarMoeda(data.total2);
-            document.getElementById('sim-pdf-m-parcela3').textContent = formatarMoeda(data.parcela3);
-            document.getElementById('sim-pdf-t-parcela3').textContent = formatarMoeda(data.total3);
+                document.getElementById('sim-pdf-m-parcela1').textContent = formatarMoeda(data.parcela1);
+                document.getElementById('sim-pdf-t-parcela1').textContent = formatarMoeda(data.total1);
+                document.getElementById('sim-pdf-m-parcela2').textContent = formatarMoeda(data.parcela2);
+                document.getElementById('sim-pdf-t-parcela2').textContent = formatarMoeda(data.total2);
+                document.getElementById('sim-pdf-m-parcela3').textContent = formatarMoeda(data.parcela3);
+                document.getElementById('sim-pdf-t-parcela3').textContent = formatarMoeda(data.total3);
+            } catch(e) {
+                console.error('Erro ao preencher PDF:', e);
+            }
 
             const element = document.getElementById('sim-pdf-content');
+            if (!element) {
+                alert('Elemento PDF não encontrado!');
+                return;
+            }
+
+            const filename = `Simulacao-${data.clientName}-${new Date().toISOString().split('T')[0]}.pdf`;
+
             const opt = {
                 margin: 10,
-                filename: `Simulacao-${data.clientName}-${new Date().toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 1, useCORS: true, allowTaint: true },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: true }
             };
 
-            html2pdf().set(opt).from(element).save();
+            html2pdf()
+                .set(opt)
+                .from(element)
+                .save()
+                .catch(function(err) {
+                    console.error('Erro ao gerar PDF:', err);
+                    alert('Erro ao gerar PDF. Verifique o console.');
+                });
         };
     </script>
 </body>
