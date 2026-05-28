@@ -449,15 +449,15 @@
             <div class="sim-form-grid">
                 <div class="sim-form-group">
                     <label for="sim-jurosFlat">Juros Flat</label>
-                    <input type="number" id="sim-jurosFlat" placeholder="2.37" step="0.01" value="2.37">
+                    <input type="text" id="sim-jurosFlat" placeholder="2.37" value="2.37" inputmode="decimal">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-jurosSBI">Juros SBI</label>
-                    <input type="number" id="sim-jurosSBI" placeholder="0.81" step="0.01" value="0.81">
+                    <input type="text" id="sim-jurosSBI" placeholder="0.81" value="0.81" inputmode="decimal">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-jurosRoukin">Juros Roukin</label>
-                    <input type="number" id="sim-jurosRoukin" placeholder="1.09" step="0.01" value="1.09">
+                    <input type="text" id="sim-jurosRoukin" placeholder="1.09" value="1.09" inputmode="decimal">
                 </div>
             </div>
 
@@ -466,31 +466,31 @@
             <div class="sim-form-grid">
                 <div class="sim-form-group">
                     <label for="sim-taxaRegistro">Taxa de Registro</label>
-                    <input type="number" id="sim-taxaRegistro" placeholder="400000" value="400000">
+                    <input type="text" id="sim-taxaRegistro" placeholder="400000" value="400.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-valorSelo">Valor do Selo</label>
-                    <input type="number" id="sim-valorSelo" placeholder="10000" value="10000">
+                    <input type="text" id="sim-valorSelo" placeholder="10000" value="10.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-taxaContrato">Taxa Contrato Banco</label>
-                    <input type="number" id="sim-taxaContrato" placeholder="20000" value="20000">
+                    <input type="text" id="sim-taxaContrato" placeholder="20000" value="20.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-registroImovel">Registro do Imóvel</label>
-                    <input type="number" id="sim-registroImovel" placeholder="100000" value="100000">
+                    <input type="text" id="sim-registroImovel" placeholder="100000" value="100.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-iptu">IPTU</label>
-                    <input type="number" id="sim-iptu" placeholder="70000" value="70000">
+                    <input type="text" id="sim-iptu" placeholder="70000" value="70.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-seguroIncendio">Seguro de Incêndio</label>
-                    <input type="number" id="sim-seguroIncendio" placeholder="400000" value="400000">
+                    <input type="text" id="sim-seguroIncendio" placeholder="400000" value="400.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-taxaCorretagem">Taxa de Corretagem</label>
-                    <input type="number" id="sim-taxaCorretagem" placeholder="891000" value="891000">
+                    <input type="text" id="sim-taxaCorretagem" placeholder="891000" value="891.000" inputmode="numeric">
                 </div>
             </div>
 
@@ -631,13 +631,13 @@
             const jurosRoukin = parseFloat(document.getElementById('sim-jurosRoukin').value) || 1.09;
 
             const custos = {
-                taxaRegistro: parseFloat(document.getElementById('sim-taxaRegistro').value) || 0,
-                valorSelo: parseFloat(document.getElementById('sim-valorSelo').value) || 0,
-                taxaContrato: parseFloat(document.getElementById('sim-taxaContrato').value) || 0,
-                registroImovel: parseFloat(document.getElementById('sim-registroImovel').value) || 0,
-                iptu: parseFloat(document.getElementById('sim-iptu').value) || 0,
-                seguroIncendio: parseFloat(document.getElementById('sim-seguroIncendio').value) || 0,
-                taxaCorretagem: parseFloat(document.getElementById('sim-taxaCorretagem').value) || 0
+                taxaRegistro: parseFloat(document.getElementById('sim-taxaRegistro').value.replace(/\./g, '')) || 0,
+                valorSelo: parseFloat(document.getElementById('sim-valorSelo').value.replace(/\./g, '')) || 0,
+                taxaContrato: parseFloat(document.getElementById('sim-taxaContrato').value.replace(/\./g, '')) || 0,
+                registroImovel: parseFloat(document.getElementById('sim-registroImovel').value.replace(/\./g, '')) || 0,
+                iptu: parseFloat(document.getElementById('sim-iptu').value.replace(/\./g, '')) || 0,
+                seguroIncendio: parseFloat(document.getElementById('sim-seguroIncendio').value.replace(/\./g, '')) || 0,
+                taxaCorretagem: parseFloat(document.getElementById('sim-taxaCorretagem').value.replace(/\./g, '')) || 0
             };
 
             const totalCustos = Object.values(custos).reduce((a, b) => a + b, 0);
@@ -711,13 +711,13 @@
             document.getElementById('sim-jurosFlat').value = '2.37';
             document.getElementById('sim-jurosSBI').value = '0.81';
             document.getElementById('sim-jurosRoukin').value = '1.09';
-            document.getElementById('sim-taxaRegistro').value = '400000';
-            document.getElementById('sim-valorSelo').value = '10000';
-            document.getElementById('sim-taxaContrato').value = '20000';
-            document.getElementById('sim-registroImovel').value = '100000';
-            document.getElementById('sim-iptu').value = '70000';
-            document.getElementById('sim-seguroIncendio').value = '400000';
-            document.getElementById('sim-taxaCorretagem').value = '891000';
+            document.getElementById('sim-taxaRegistro').value = '400.000';
+            document.getElementById('sim-valorSelo').value = '10.000';
+            document.getElementById('sim-taxaContrato').value = '20.000';
+            document.getElementById('sim-registroImovel').value = '100.000';
+            document.getElementById('sim-iptu').value = '70.000';
+            document.getElementById('sim-seguroIncendio').value = '400.000';
+            document.getElementById('sim-taxaCorretagem').value = '891.000';
         };
 
         // PDF com jsPDF
