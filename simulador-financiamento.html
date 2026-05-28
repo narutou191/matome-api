@@ -500,7 +500,7 @@
                 <div class="sim-parcela-card sim-card-1">
                     <div class="sim-parcela-title">Parcela 100% Fixo</div>
                     <div class="sim-parcela-value sim-card-1-value" id="sim-parcela1">¥0</div>
-                    <div class="sim-parcela-period">/ mês por 50 anos</div>
+                    <div class="sim-parcela-period">/ mês por <span id="sim-years-display1">50</span> anos</div>
                     <div class="sim-parcela-divider"></div>
                     <div class="sim-parcela-details">
                         <div class="sim-detail-row">
@@ -521,7 +521,7 @@
                 <div class="sim-parcela-card sim-card-2">
                     <div class="sim-parcela-title">Parcela Variável 1 (SBI)</div>
                     <div class="sim-parcela-value sim-card-2-value" id="sim-parcela2">¥0</div>
-                    <div class="sim-parcela-period">/ mês por 50 anos</div>
+                    <div class="sim-parcela-period">/ mês por <span id="sim-years-display2">50</span> anos</div>
                     <div class="sim-parcela-divider"></div>
                     <div class="sim-parcela-details">
                         <div class="sim-detail-row">
@@ -542,7 +542,7 @@
                 <div class="sim-parcela-card sim-card-3">
                     <div class="sim-parcela-title">Parcela Variável 2 (Roukin)</div>
                     <div class="sim-parcela-value sim-card-3-value" id="sim-parcela3">¥0</div>
-                    <div class="sim-parcela-period">/ mês por 50 anos</div>
+                    <div class="sim-parcela-period">/ mês por <span id="sim-years-display3">50</span> anos</div>
                     <div class="sim-parcela-divider"></div>
                     <div class="sim-parcela-details">
                         <div class="sim-detail-row">
@@ -733,6 +733,11 @@
             document.getElementById('sim-taxa1').textContent = data.jurosFlat.toFixed(2) + '%';
             document.getElementById('sim-taxa2').textContent = data.jurosSBI.toFixed(2) + '%';
             document.getElementById('sim-taxa3').textContent = data.jurosRoukin.toFixed(2) + '%';
+
+            // Atualizar anos
+            document.getElementById('sim-years-display1').textContent = data.financingYears;
+            document.getElementById('sim-years-display2').textContent = data.financingYears;
+            document.getElementById('sim-years-display3').textContent = data.financingYears;
 
             const now = new Date();
             const dataStr = now.toLocaleDateString('pt-BR');
