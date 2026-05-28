@@ -436,7 +436,7 @@
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-propertyValue">Valor do Imóvel (¥)</label>
-                    <input type="number" id="sim-propertyValue" placeholder="25000000" value="25000000">
+                    <input type="text" id="sim-propertyValue" placeholder="25000000" value="25.000.000" inputmode="numeric">
                 </div>
                 <div class="sim-form-group">
                     <label for="sim-financingYears">Tempo de Financiamento (anos)</label>
@@ -623,7 +623,8 @@
 
         // Calcular
         window.simCalcular = function() {
-            const propertyValue = parseFloat(document.getElementById('sim-propertyValue').value) || 0;
+            const propertyValueFormatted = document.getElementById('sim-propertyValue').value;
+            const propertyValue = parseFloat(propertyValueFormatted.replace(/\./g, '')) || 0;
             const financingYears = parseFloat(document.getElementById('sim-financingYears').value) || 50;
             const jurosFlat = parseFloat(document.getElementById('sim-jurosFlat').value) || 2.37;
             const jurosSBI = parseFloat(document.getElementById('sim-jurosSBI').value) || 0.81;
@@ -705,7 +706,7 @@
         window.simResetar = function() {
             document.getElementById('sim-resultSection').classList.remove('sim-show');
             document.getElementById('sim-clientName').value = '';
-            document.getElementById('sim-propertyValue').value = '25000000';
+            document.getElementById('sim-propertyValue').value = '25.000.000';
             document.getElementById('sim-financingYears').value = '50';
             document.getElementById('sim-jurosFlat').value = '2.37';
             document.getElementById('sim-jurosSBI').value = '0.81';
