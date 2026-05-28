@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Financiamento — Meu Projeto no Japão</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg: #0f1419;
+            --color-bg-secondary: #1a2028;
+            --color-accent-gold: #d4af37;
+            --color-accent-green: #2dd4a4;
+            --color-accent-emerald: #1b5e5e;
+            --color-text-primary: #ffffff;
+            --color-text-secondary: #a0a0a0;
+            --color-border: #2a3844;
+            --color-success: #06b55f;
+            --color-alert: #ff6b6b;
+        }
+
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-image:
+                linear-gradient(45deg, transparent 48%, rgba(45, 212, 164, 0.02) 50%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, rgba(45, 212, 164, 0.02) 50%, transparent 52%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+        }
+
+        /* HEADER */
+        .header {
+            position: relative;
+            padding: 60px 40px;
+            text-align: center;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 80px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 120%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--color-accent-gold), transparent);
+            transform: translateX(-50%);
+        }
+
+        .header-logo {
+            font-size: 12px;
+            letter-spacing: 3px;
+            color: var(--color-accent-gold);
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-logo::before {
+            content: '◆';
+            font-size: 14px;
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-bottom: 40px;
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .header-nav span {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-text-secondary);
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .header-nav span.active {
+            color: var(--color-accent-green);
+        }
+
+        .header-nav span.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--color-accent-green);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* INPUT SECTION */
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 100px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--color-text-primary);
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .input-group h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--color-accent-gold);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--color-text-secondary);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-field input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--color-border);
+            padding: 12px 0;
+            color: var(--color-text-primary);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-field input:focus {
+            border-bottom-color: var(--color-accent-green);
+            background: rgba(45, 212, 164, 0.05);
+            padding: 12px 8px;
+        }
+
+        .form-field input::placeholder {
+            color: var(--color-text-secondary);
+        }
+
+        /* BUTTONS */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-accent-gold), var(--color-accent-gold));
+            color: var(--color-bg);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(212, 175, 55, 0.25);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-accent-gold);
+            border: 2px solid var(--color-accent-gold);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* RESULTADO */
+        .result-section {
+            display: none;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 60px;
+            color: var(--color-accent-green);
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .result-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--color-accent-gold);
+        }
+
+        .result-card:nth-child(2)::before {
+            background: var(--color-accent-green);
+        }
+
+        .result-card:hover {
+            border-color: var(--color-accent-gold);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-card:nth-child(2):hover {
+            border-color: var(--color-accent-green);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .card-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-text-secondary);
+            flex: 1;
+        }
+
+        .card-badge {
+            font-size: 10px;
+            padding: 6px 12px;
+            background: rgba(45, 212, 164, 0.15);
+            color: var(--color-accent-green);
+            border-radius: 2px;
+            font-weight: 700;
+        }
+
+        .result-card:nth-child(1) .card-badge {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--color-alert);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+
+        .result-item.total {
+            padding-top: 20px;
+            padding-bottom: 0;
+            border-top: 2px solid var(--color-border);
+            margin-top: 10px;
+        }
+
+        .result-item.total .result-label {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .result-item.total .result-value {
+            font-size: 20px;
+            color: var(--color-accent-gold);
+        }
+
+        .result-card:nth-child(2) .result-item.total .result-value {
+            color: var(--color-accent-green);
+        }
+
+        /* PARCELAS CONTAINER */
+        .parcelas-section {
+            margin-bottom: 80px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 40px;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--color-accent-gold), transparent);
+        }
+
+        .parcelas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .parcela-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            padding: 40px 32px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .parcela-card::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--color-accent-green);
+            transition: top 0.4s ease;
+        }
+
+        .parcela-card:nth-child(2)::before {
+            background: var(--color-accent-green);
+        }
+
+        .parcela-card:nth-child(3)::before {
+            background: var(--color-accent-gold);
+        }
+
+        .parcela-card:hover::before {
+            top: 0;
+        }
+
+        .parcela-type {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-text-secondary);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .parcela-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--color-accent-green);
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .parcela-card:nth-child(3) .parcela-value {
+            color: var(--color-accent-gold);
+        }
+
+        .parcela-period {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .parcela-divider {
+            height: 1px;
+            background: var(--color-border);
+            margin: 24px 0;
+        }
+
+        .parcela-details {
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .parcela-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .parcela-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .parcela-detail-label {
+            color: var(--color-text-secondary);
+        }
+
+        .parcela-detail-value {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        /* PDF BUTTON */
+        .pdf-button-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 60px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn-pdf {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, var(--color-accent-green), #06b55f);
+            color: var(--color-bg);
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(45, 212, 164, 0.2);
+        }
+
+        .btn-pdf:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 36px rgba(45, 212, 164, 0.3);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .input-section {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .parcelas-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .header {
+                padding: 40px 24px;
+                margin-bottom: 60px;
+            }
+
+            .container {
+                padding: 0 24px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header-title {
+                font-size: 28px;
+            }
+
+            .header-nav {
+                gap: 20px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+
+            .parcela-value {
+                font-size: 28px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-logo">Meu Projeto no Japão</div>
+        <h1 class="header-title">Simulador de Financiamento</h1>
+        <p class="header-subtitle">Calcule cenários de financiamento imobiliário</p>
+        <nav class="header-nav">
+            <span class="active">01 ENTRADA</span>
+            <span>02 CÁLCULO</span>
+            <span>03 RESULTADO</span>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="input-section">
+            <!-- Seção 1: Dados da Simulação -->
+            <div class="input-group">
+                <h3>Dados Principais</h3>
+                <div class="form-grid full">
+                    <div class="form-field">
+                        <label>Nome do Cliente</label>
+                        <input type="text" id="v2-clientName" placeholder="Seu nome aqui">
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Valor do Imóvel (¥)</label>
+                        <input type="text" id="v2-propertyValue" value="25.000.000" placeholder="0">
+                    </div>
+                    <div class="form-field">
+                        <label>Período (anos)</label>
+                        <input type="number" id="v2-years" value="50" min="1" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2: Taxas e Custos -->
+            <div class="input-group">
+                <h3>Taxas & Custos</h3>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Juros Flat (%)</label>
+                        <input type="text" id="v2-flatRate" value="2.37" placeholder="0.00">
+                    </div>
+                    <div class="form-field">
+                        <label>Juros SBI (%)</label>
+                        <input type="text" id="v2-sbiRate" value="0.81" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Juros Roukin (%)</label>
+                        <input type="text" id="v2-roukinRate" value="1.09" placeholder="0.00">
+                    </div>
+                    <div class="form-field">
+                        <label>Custos Adicionais (¥)</label>
+                        <input type="text" id="v2-additionalCosts" value="2.891.000" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="window.v2Calculate()">Calcular</button>
+                    <button class="btn btn-secondary" onclick="window.v2Reset()">Limpar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADO -->
+        <div class="result-section" id="v2-resultSection">
+            <h2 class="result-title">Cenários Comparativos</h2>
+
+            <div class="result-grid">
+                <!-- Card 1 -->
+                <div class="result-card">
+                    <div class="card-header">
+                        <span class="card-label">Cenário Flat</span>
+                        <span class="card-badge">100% FIXO</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Parcela Mensal</span>
+                        <span class="result-value" id="v2-monthly1">¥0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Taxa Anual</span>
+                        <span class="result-value" id="v2-rate1">2.37%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total de Juros</span>
+                        <span class="result-value" id="v2-juros1">¥0</span>
+                    </div>
+                    <div class="result-item total">
+                        <span class="result-label">Total a Pagar</span>
+                        <span class="result-value" id="v2-total1">¥0</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="result-card">
+                    <div class="card-header">
+                        <span class="card-label">Melhor Cenário</span>
+                        <span class="card-badge">+ VANTAJOSO</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Parcela Mensal</span>
+                        <span class="result-value" id="v2-monthly2">¥0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Taxa Anual</span>
+                        <span class="result-value" id="v2-rate2">0.81%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total de Juros</span>
+                        <span class="result-value" id="v2-juros2">¥0</span>
+                    </div>
+                    <div class="result-item total">
+                        <span class="result-label">Total a Pagar</span>
+                        <span class="result-value" id="v2-total2">¥0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="parcelas-section">
+                <h2 class="section-title">⬇ Todas as Opções</h2>
+
+                <div class="parcelas-grid">
+                    <!-- Opcao 1 -->
+                    <div class="parcela-card">
+                        <div class="parcela-type">Parcela Flat</div>
+                        <div class="parcela-value" id="v2-parcela1">¥0</div>
+                        <div class="parcela-period">/ mês por <span id="v2-p1Years">50</span> anos</div>
+                        <div class="parcela-divider"></div>
+                        <div class="parcela-details">
+                            <div class="parcela-detail-row">
+                                <span class="parcela-detail-label">Taxa</span>
+                                <span class="parcela-detail-value" id="v2-p1Rate">2.37%</span>
+                            </div>
+                            <div class="parcela-detail-row">
+                                <span class="parcela-detail-label">Total</span>
+                                <span class="parcela-detail-value" id="v2-p1Total">¥0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opcao 2 -->
+                    <div class="parcela-card">
+                        <div class="parcela-type">Parcela SBI</div>
+                        <div class="parcela-value" id="v2-parcela2">¥0</div>
+                        <div class="parcela-period">/ mês por <span id="v2-p2Years">50</span> anos</div>
+                        <div class="parcela-divider"></div>
+                        <div class="parcela-details">
+                            <div class="parcela-detail-row">
+                                <span class="parcela-detail-label">Taxa</span>
+                                <span class="parcela-detail-value" id="v2-p2Rate">0.81%</span>
+                            </div>
+                            <div class="parcela-detail-row">
+                                <span class="parcela-detail-label">Total</span>
+                                <span class="parcela-detail-value" id="v2-p2Total">¥0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opcao 3 -->
+                    <div class="parcela-card">
+                        <div class="parcela-type">Parcela Roukin</div>
+                        <div class="parcela-value" id="v2-parcela3">¥0</div>
+                        <div class="parcela-period">/ mês por <span id="v2-p3Years">50</span> anos</div>
+                        <div class="parcela-divider"></div>
+                        <div class="parcela-details">
+                            <div class="parcela-detail-row">
+                                <span class="parcela-detail-label">Taxa</span>
+                                <span class="parcela-detail-value" id="v2-p3Rate">1.09%</span>
+                            </div>
+                            <div class="parcela-detail-row">
+                                <span class="parcela-detail-label">Total</span>
+                                <span class="parcela-detail-value" id="v2-p3Total">¥0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-button-wrapper">
+                <button class="btn-pdf" onclick="window.v2GeneratePDF()">📄 Gerar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Calcular parcela (PMT formula)
+        function v2CalculatePayment(loan, annualRate, years) {
+            const months = years * 12;
+            const monthlyRate = (annualRate / 100) / 12;
+            if (monthlyRate === 0) return loan / months;
+            return (loan * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+        }
+
+        // Formatar moeda
+        function v2FormatCurrency(value) {
+            if (!value || isNaN(value)) return '¥0';
+            return '¥' + Math.round(value).toLocaleString('ja-JP');
+        }
+
+        // Remover formatação
+        function v2Unformat(str) {
+            return parseFloat(str.toString().replace(/[^\d.-]/g, '')) || 0;
+        }
+
+        // Calcular
+        window.v2Calculate = function() {
+            const property = v2Unformat(document.getElementById('v2-propertyValue').value);
+            const costs = v2Unformat(document.getElementById('v2-additionalCosts').value);
+            const years = parseInt(document.getElementById('v2-years').value) || 50;
+            const rate1 = parseFloat(document.getElementById('v2-flatRate').value) || 2.37;
+            const rate2 = parseFloat(document.getElementById('v2-sbiRate').value) || 0.81;
+            const rate3 = parseFloat(document.getElementById('v2-roukinRate').value) || 1.09;
+
+            const totalLoan = property + costs;
+            const months = years * 12;
+
+            const payment1 = v2CalculatePayment(totalLoan, rate1, years);
+            const payment2 = v2CalculatePayment(totalLoan, rate2, years);
+            const payment3 = v2CalculatePayment(totalLoan, rate3, years);
+
+            const total1 = payment1 * months;
+            const total2 = payment2 * months;
+            const total3 = payment3 * months;
+
+            const juros1 = total1 - totalLoan;
+            const juros2 = total2 - totalLoan;
+            const juros3 = total3 - totalLoan;
+
+            window.v2Data = {
+                client: document.getElementById('v2-clientName').value || 'Cliente',
+                property, costs, totalLoan, years, months,
+                payment1, payment2, payment3,
+                total1, total2, total3,
+                juros1, juros2, juros3,
+                rate1, rate2, rate3
+            };
+
+            // Atualizar UI
+            document.getElementById('v2-monthly1').textContent = v2FormatCurrency(payment1);
+            document.getElementById('v2-monthly2').textContent = v2FormatCurrency(payment2);
+            document.getElementById('v2-rate1').textContent = rate1.toFixed(2) + '%';
+            document.getElementById('v2-rate2').textContent = rate2.toFixed(2) + '%';
+            document.getElementById('v2-juros1').textContent = v2FormatCurrency(juros1);
+            document.getElementById('v2-juros2').textContent = v2FormatCurrency(juros2);
+            document.getElementById('v2-total1').textContent = v2FormatCurrency(total1);
+            document.getElementById('v2-total2').textContent = v2FormatCurrency(total2);
+
+            // Parcelas
+            document.getElementById('v2-parcela1').textContent = v2FormatCurrency(payment1);
+            document.getElementById('v2-parcela2').textContent = v2FormatCurrency(payment2);
+            document.getElementById('v2-parcela3').textContent = v2FormatCurrency(payment3);
+            document.getElementById('v2-p1Total').textContent = v2FormatCurrency(total1);
+            document.getElementById('v2-p2Total').textContent = v2FormatCurrency(total2);
+            document.getElementById('v2-p3Total').textContent = v2FormatCurrency(total3);
+            document.getElementById('v2-p1Years').textContent = years;
+            document.getElementById('v2-p2Years').textContent = years;
+            document.getElementById('v2-p3Years').textContent = years;
+
+            document.getElementById('v2-resultSection').classList.add('show');
+        };
+
+        // Resetar
+        window.v2Reset = function() {
+            document.getElementById('v2-resultSection').classList.remove('show');
+            document.getElementById('v2-clientName').value = '';
+            document.getElementById('v2-propertyValue').value = '25.000.000';
+            document.getElementById('v2-years').value = '50';
+            document.getElementById('v2-additionalCosts').value = '2.891.000';
+        };
+
+        // Gerar PDF
+        window.v2GeneratePDF = function() {
+            if (!window.v2Data) {
+                alert('Execute uma simulação primeiro');
+                return;
+            }
+            const data = window.v2Data;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const w = doc.internal.pageSize.getWidth();
+            let y = 20;
+
+            doc.setFontSize(20);
+            doc.text('SIMULADOR DE FINANCIAMENTO', w / 2, y, { align: 'center' });
+            y += 15;
+
+            doc.setFontSize(10);
+            doc.text(`Cliente: ${data.client}`, 20, y);
+            y += 5;
+            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, y);
+            y += 15;
+
+            doc.setFontSize(12);
+            doc.text('RESUMO', 20, y);
+            y += 8;
+            doc.setFontSize(9);
+            doc.text(`Valor Imóvel: ${v2FormatCurrency(data.property)}`, 20, y); y += 6;
+            doc.text(`Custos: ${v2FormatCurrency(data.costs)}`, 20, y); y += 6;
+            doc.text(`Total Empréstimo: ${v2FormatCurrency(data.totalLoan)}`, 20, y); y += 6;
+            doc.text(`Período: ${data.years} anos`, 20, y); y += 15;
+
+            doc.setFontSize(12);
+            doc.text('CENÁRIOS', 20, y);
+            y += 8;
+            doc.setFontSize(9);
+            doc.text(`Flat (${data.rate1.toFixed(2)}%): ${v2FormatCurrency(data.payment1)}/mês → ${v2FormatCurrency(data.total1)} total`, 20, y); y += 6;
+            doc.text(`SBI (${data.rate2.toFixed(2)}%): ${v2FormatCurrency(data.payment2)}/mês → ${v2FormatCurrency(data.total2)} total`, 20, y); y += 6;
+            doc.text(`Roukin (${data.rate3.toFixed(2)}%): ${v2FormatCurrency(data.payment3)}/mês → ${v2FormatCurrency(data.total3)} total`, 20, y);
+
+            doc.save(`Simulacao-${data.client}-${new Date().toISOString().split('T')[0]}.pdf`);
+        };
+
+        // Formatação de inputs
+        document.addEventListener('DOMContentLoaded', () => {
+            ['v2-propertyValue', 'v2-additionalCosts'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', (e) => {
+                        const nums = e.target.value.replace(/\D/g, '');
+                        e.target.value = nums.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
