@@ -597,7 +597,7 @@
             return (valorEmprestimo * numerador) / denominador;
         }
 
-        // Formatador
+        // Formatador de Moeda (com símbolo ¥)
         function formatarMoeda(valor) {
             if (valor === null || valor === undefined || isNaN(valor)) {
                 return '¥0';
@@ -606,6 +606,19 @@
             return '¥' + num.toLocaleString('ja-JP', {
                 maximumFractionDigits: 0
             });
+        }
+
+        // Formatador de Número (com separador de milhares)
+        function formatarNumero(valor) {
+            if (!valor) return '';
+            const apenasNumeros = valor.toString().replace(/\D/g, '');
+            if (!apenasNumeros) return '';
+            return apenasNumeros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Deformatar (remover separadores)
+        function deformatarNumero(valor) {
+            return valor.toString().replace(/\./g, '');
         }
 
         // Calcular
@@ -804,6 +817,41 @@
                 alert('Erro ao gerar PDF: ' + err.message);
             }
         };
+
+        // Formatadores de entrada numérica
+        document.addEventListener('DOMContentLoaded', function() {
+            const camposNumeros = [
+                'sim-propertyValue',
+                'sim-taxaRegistro',
+                'sim-valorSelo',
+                'sim-taxaContrato',
+                'sim-registroImovel',
+                'sim-iptu',
+                'sim-seguroIncendio',
+                'sim-taxaCorretagem'
+            ];
+
+            camposNumeros.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function(e) {
+                        const valor = e.target.value;
+                        const numeros = valor.replace(/\D/g, '');
+                        const formatado = numeros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        e.target.value = formatado;
+                    });
+
+                    input.addEventListener('blur', function(e) {
+                        const valor = e.target.value;
+                        const numeros = valor.replace(/\D/g, '');
+                        if (numeros) {
+                            const formatado = numeros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                            e.target.value = formatado;
+                        }
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>
