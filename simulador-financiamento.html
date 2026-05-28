@@ -509,7 +509,7 @@
                         </div>
                         <div class="sim-detail-row">
                             <span class="sim-detail-label">Tipo:</span>
-                            <span class="sim-detail-value">Fixo 50 anos</span>
+                            <span class="sim-detail-value">Fixo</span>
                         </div>
                         <div class="sim-detail-row">
                             <span class="sim-detail-label">Total a Pagar:</span>
@@ -530,7 +530,7 @@
                         </div>
                         <div class="sim-detail-row">
                             <span class="sim-detail-label">Tipo:</span>
-                            <span class="sim-detail-value">Variável 5 anos</span>
+                            <span class="sim-detail-value">Variável</span>
                         </div>
                         <div class="sim-detail-row">
                             <span class="sim-detail-label">Total a Pagar:</span>
@@ -551,7 +551,7 @@
                         </div>
                         <div class="sim-detail-row">
                             <span class="sim-detail-label">Tipo:</span>
-                            <span class="sim-detail-value">Variável 10 anos</span>
+                            <span class="sim-detail-value">Variável</span>
                         </div>
                         <div class="sim-detail-row">
                             <span class="sim-detail-label">Total a Pagar:</span>
@@ -774,6 +774,13 @@
                 return;
             }
 
+            // Verificar se html2pdf carregou
+            if (typeof html2pdf === 'undefined') {
+                alert('Erro: biblioteca de PDF não carregou. Tente novamente.');
+                console.error('html2pdf não está disponível');
+                return;
+            }
+
             // Preencher dados
             try {
                 document.getElementById('sim-pdf-date').textContent = new Date().toLocaleDateString('pt-BR');
@@ -795,6 +802,8 @@
                 document.getElementById('sim-pdf-t-parcela3').textContent = formatarMoeda(data.total3);
             } catch(e) {
                 console.error('Erro ao preencher PDF:', e);
+                alert('Erro ao preparar dados do PDF');
+                return;
             }
 
             const element = document.getElementById('sim-pdf-content');
@@ -806,21 +815,29 @@
             const filename = `Simulacao-${data.clientName}-${new Date().toISOString().split('T')[0]}.pdf`;
 
             const opt = {
-                margin: 10,
+                margin: [10, 10, 10, 10],
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 1, useCORS: true, allowTaint: true },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: true }
+                html2canvas: {
+                    scale: 1.5,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                },
+                jsPDF: {
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: false
+                }
             };
 
-            html2pdf()
-                .set(opt)
-                .from(element)
-                .save()
-                .catch(function(err) {
-                    console.error('Erro ao gerar PDF:', err);
-                    alert('Erro ao gerar PDF. Verifique o console.');
-                });
+            try {
+                html2pdf().set(opt).from(element).save();
+            } catch(err) {
+                console.error('Erro ao gerar PDF:', err);
+                alert('Erro ao gerar PDF. Detalhes: ' + err.message);
+            }
         };
     </script>
 </body>
