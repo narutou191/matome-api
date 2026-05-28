@@ -32,6 +32,7 @@
             margin-bottom: 40px;
             border-bottom: 2px solid #d4af37;
             border-radius: 4px;
+            text-align: center;
         }
 
         .sim-header-top {
@@ -39,6 +40,18 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+        }
+
+        .sim-logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .sim-logo-container img {
+            max-width: 300px;
+            height: auto;
         }
 
         .sim-logo, .sim-tag {
@@ -58,6 +71,13 @@
         .sim-header p {
             color: #a0a0a0;
             font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .sim-logo-img {
+            max-width: 200px;
+            height: auto;
             margin-bottom: 20px;
         }
 
@@ -243,20 +263,23 @@
         }
 
         .sim-parcela-card {
-            background: #1a1a2e;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 25px;
-            transition: all 0.3s;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 40px 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            text-align: center;
         }
 
-        .sim-card-1 { border-top: 4px solid #3b82f6; }
-        .sim-card-2 { border-top: 4px solid #2dd4a4; }
-        .sim-card-3 { border-top: 4px solid #f59e0b; }
+        .sim-card-1 { border-top: 5px solid #3b82f6; }
+        .sim-card-2 { border-top: 5px solid #2dd4a4; }
+        .sim-card-3 { border-top: 5px solid #f59e0b; }
 
         .sim-parcela-card:hover {
-            border-color: #d4af37;
-            transform: translateY(-4px);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+            border-color: #555;
         }
 
         .sim-parcela-title {
@@ -268,9 +291,10 @@
         }
 
         .sim-parcela-value {
-            font-size: 42px;
+            font-size: 52px;
             font-weight: 700;
             margin-bottom: 10px;
+            letter-spacing: -1px;
         }
 
         .sim-card-1-value { color: #3b82f6; }
@@ -396,9 +420,8 @@
 <body>
     <div class="sim-container">
         <header class="sim-header">
-            <div class="sim-header-top">
-                <div class="sim-logo">🏠 Meu Projeto no Japão</div>
-                <div class="sim-tag">SIMULADOR ROUKIN</div>
+            <div class="sim-logo-container">
+                <img src="homestation-logo.png" alt="HomeStation Logo">
             </div>
             <h1>Simulador de Financiamento Imobiliário</h1>
             <p>Calcule as parcelas mensais e custos totais de financiamento</p>
