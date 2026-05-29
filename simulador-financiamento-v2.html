@@ -297,8 +297,34 @@
             border: 1px solid #333;
             border-radius: 4px;
             overflow-x: auto;
-            max-height: 350px;
-            overflow-y: auto;
+            max-height: 250px;
+            overflow-y: scroll;
+        }
+
+        .sim-load-more-btn {
+            background: #d4af37;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .sim-load-more-btn:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        .sim-load-more-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .sim-table {
@@ -536,6 +562,9 @@
                     </tbody>
                 </table>
             </div>
+            <button class="sim-load-more-btn" id="sim-loadMoreBtn" onclick="window.simCarregarMaisMeses()">
+                📥 Carregar Mais Meses
+            </button>
         </section>
     </div>
 
@@ -833,9 +862,6 @@
             tableState.currentIndex = proximoIndice;
         }
 
-        // Track if scroll listener is attached
-        let scrollListenerAttached = false;
-
         function renderizarTabela(tabela) {
             const tbody = document.getElementById('sim-tableBody');
             tbody.innerHTML = '';
@@ -848,28 +874,36 @@
             // Render first 15 months
             renderizarMesesAdicionais();
 
-            // Setup infinite scroll with scroll listener (only once)
-            const container = document.getElementById('sim-tableContainer');
+            // Update button visibility
+            atualizarBotaoCarregarMais();
+        }
 
-            if (!scrollListenerAttached) {
-                container.addEventListener('scroll', function checkScroll() {
-                    // Calculate distance from bottom
-                    const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
+        function atualizarBotaoCarregarMais() {
+            const btn = document.getElementById('sim-loadMoreBtn');
+            if (!btn) return;
 
-                    // If near bottom, load more rows
-                    if (
-                        distanceFromBottom < 150 &&
-                        !tableState.isLoading &&
-                        tableState.currentIndex < tableState.tabela.length
-                    ) {
-                        tableState.isLoading = true;
-                        renderizarMesesAdicionais();
-                        tableState.isLoading = false;
-                    }
-                });
-                scrollListenerAttached = true;
+            if (tableState.currentIndex >= tableState.tabela.length) {
+                btn.disabled = true;
+                btn.textContent = '✓ Todos os 600 meses carregados';
+            } else {
+                btn.disabled = false;
+                const mesesRestantes = tableState.tabela.length - tableState.currentIndex;
+                btn.textContent = `📥 Carregar Mais Meses (${mesesRestantes} restantes)`;
             }
         }
+
+        window.simCarregarMaisMeses = function() {
+            if (!tableState.isLoading && tableState.currentIndex < tableState.tabela.length) {
+                renderizarMesesAdicionais();
+                atualizarBotaoCarregarMais();
+
+                // Auto-scroll to show new rows
+                const container = document.getElementById('sim-tableContainer');
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 50);
+            }
+        };
 
         // ===== TASK 8: Reset Function =====
         window.simResetar = function() {
