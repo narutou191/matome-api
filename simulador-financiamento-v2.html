@@ -775,14 +775,25 @@
             });
         }
 
-        // ===== TASK 7: Table Rendering (Limited to 15 months for better UX) =====
-        function renderizarTabela(tabela) {
-            const tbody = document.getElementById('sim-tableBody');
-            tbody.innerHTML = '';
+        // ===== TASK 7: Table Rendering with Infinite Scroll (15 months at a time) =====
+        let tableState = {
+            tabela: [],
+            currentIndex: 0,
+            isLoading: false
+        };
 
-            // Render only first 15 rows (15 months) for better UX
-            const limite = Math.min(15, tabela.length);
-            for (let i = 0; i < limite; i++) {
+        function renderizarMesesAdicionais() {
+            const tbody = document.getElementById('sim-tableBody');
+            const { tabela, currentIndex } = tableState;
+
+            if (currentIndex >= tabela.length) {
+                return; // All data loaded
+            }
+
+            // Load next 15 months
+            const proximoIndice = Math.min(currentIndex + 15, tabela.length);
+
+            for (let i = currentIndex; i < proximoIndice; i++) {
                 const row = tabela[i];
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -796,6 +807,53 @@
                 `;
                 tbody.appendChild(tr);
             }
+
+            tableState.currentIndex = proximoIndice;
+        }
+
+        function renderizarTabela(tabela) {
+            const tbody = document.getElementById('sim-tableBody');
+            tbody.innerHTML = '';
+
+            // Initialize table state
+            tableState.tabela = tabela;
+            tableState.currentIndex = 0;
+            tableState.isLoading = false;
+
+            // Render first 15 months
+            renderizarMesesAdicionais();
+
+            // Setup infinite scroll observer
+            const container = document.getElementById('sim-tableContainer');
+
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !tableState.isLoading && tableState.currentIndex < tabela.length) {
+                    tableState.isLoading = true;
+                    // Small delay to avoid loading too fast
+                    setTimeout(() => {
+                        renderizarMesesAdicionais();
+                        tableState.isLoading = false;
+                    }, 100);
+                }
+            }, {
+                root: container,
+                threshold: 0.1,
+                rootMargin: '100px'
+            });
+
+            // Create sentinel element at the end of table
+            setTimeout(() => {
+                let sentinel = tbody.querySelector('.sim-table-sentinel');
+                if (sentinel) sentinel.remove();
+
+                if (tableState.currentIndex < tabela.length) {
+                    const sentinelTr = document.createElement('tr');
+                    sentinelTr.className = 'sim-table-sentinel';
+                    sentinelTr.style.display = 'none';
+                    tbody.appendChild(sentinelTr);
+                    observer.observe(sentinelTr);
+                }
+            }, 0);
         }
 
         // ===== TASK 8: Reset Function =====
@@ -812,6 +870,13 @@
                 simChartInstance.destroy();
                 simChartInstance = null;
             }
+
+            // Reset table state
+            tableState = {
+                tabela: [],
+                currentIndex: 0,
+                isLoading: false
+            };
 
             window.simData = null;
         };
