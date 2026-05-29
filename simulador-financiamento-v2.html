@@ -297,7 +297,7 @@
             border: 1px solid #333;
             border-radius: 4px;
             overflow-x: auto;
-            max-height: 600px;
+            max-height: 350px;
             overflow-y: auto;
         }
 
@@ -833,6 +833,9 @@
             tableState.currentIndex = proximoIndice;
         }
 
+        // Track if scroll listener is attached
+        let scrollListenerAttached = false;
+
         function renderizarTabela(tabela) {
             const tbody = document.getElementById('sim-tableBody');
             tbody.innerHTML = '';
@@ -845,27 +848,27 @@
             // Render first 15 months
             renderizarMesesAdicionais();
 
-            // Setup infinite scroll with scroll listener
+            // Setup infinite scroll with scroll listener (only once)
             const container = document.getElementById('sim-tableContainer');
 
-            // Remove old scroll listener if exists
-            container.onscroll = null;
+            if (!scrollListenerAttached) {
+                container.addEventListener('scroll', function checkScroll() {
+                    // Calculate distance from bottom
+                    const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
 
-            container.addEventListener('scroll', function handleScroll() {
-                // Check if near bottom (within 200px)
-                if (
-                    !tableState.isLoading &&
-                    tableState.currentIndex < tabela.length &&
-                    container.scrollHeight - container.scrollTop - container.clientHeight < 200
-                ) {
-                    tableState.isLoading = true;
-                    // Small delay to batch loading
-                    setTimeout(() => {
+                    // If near bottom, load more rows
+                    if (
+                        distanceFromBottom < 150 &&
+                        !tableState.isLoading &&
+                        tableState.currentIndex < tableState.tabela.length
+                    ) {
+                        tableState.isLoading = true;
                         renderizarMesesAdicionais();
                         tableState.isLoading = false;
-                    }, 50);
-                }
-            }, { passive: true });
+                    }
+                });
+                scrollListenerAttached = true;
+            }
         }
 
         // ===== TASK 8: Reset Function =====
