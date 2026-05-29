@@ -213,6 +213,12 @@
             margin-top: 8px;
         }
 
+        .sim-warning-bottom {
+            margin-bottom: 0 !important;
+            padding-top: 40px !important;
+            padding-bottom: 40px !important;
+        }
+
         .sim-result-header {
             background: #1a2e2a;
             border-left: 4px solid #2dd4a4;
@@ -519,11 +525,6 @@
         </section>
 
         <section class="sim-result-section" id="sim-resultSection" style="display: none;">
-            <div class="sim-result-warning">
-                <strong>⚠️ AVISO IMPORTANTE</strong>
-                <p>Este é um simulador com fins informativos. Os valores reais podem variar conforme a instituição financeira. Consulte seu banco para uma cotação precisa.</p>
-            </div>
-
             <div class="sim-result-header">
                 <h3>✅ Simulação Realizada</h3>
                 <p id="sim-resultDate"></p>
@@ -584,6 +585,11 @@
                 📥 Carregar Mais Meses
             </button>
         </section>
+
+        <div class="sim-result-warning sim-warning-bottom">
+            <strong>⚠️ AVISO IMPORTANTE</strong>
+            <p>Este é um simulador com fins informativos. Os valores reais podem variar conforme a instituição financeira. Consulte seu banco para uma cotação precisa.</p>
+        </div>
     </div>
 
     <script>
