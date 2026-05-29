@@ -614,7 +614,9 @@
 
         // ===== TASK 5: Validation & Main Handler =====
         function validarInputs() {
-            const valorFinanciado = parseFloat(document.getElementById('sim-propertyValue').value);
+            // Clean the property value (remove non-digits) before parsing
+            const propertyValueClean = document.getElementById('sim-propertyValue').value.replace(/[^0-9]/g, '');
+            const valorFinanciado = parseFloat(propertyValueClean);
             const tempo = parseFloat(document.getElementById('sim-financingYears').value);
             const juros = parseFloat(document.getElementById('sim-juros').value);
 
@@ -641,7 +643,9 @@
             }
 
             const clientName = document.getElementById('sim-clientName').value || 'Cliente';
-            const valorFinanciado = parseFloat(document.getElementById('sim-propertyValue').value);
+            // Clean the property value (remove non-digits) before parsing
+            const propertyValueClean = document.getElementById('sim-propertyValue').value.replace(/[^0-9]/g, '');
+            const valorFinanciado = parseFloat(propertyValueClean);
             const tempo = parseFloat(document.getElementById('sim-financingYears').value);
             const juros = parseFloat(document.getElementById('sim-juros').value);
 
@@ -812,17 +816,22 @@
         };
 
         // ===== Input Formatting with Thousand Separator =====
-        document.getElementById('sim-propertyValue').addEventListener('input', function(e) {
-            let valor = e.target.value.replace(/\D/g, '');
-            if (valor) {
-                e.target.value = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        document.getElementById('sim-propertyValue').addEventListener('blur', function(e) {
+            if (e.target.value) {
+                // Remove all non-digits
+                let valor = e.target.value.replace(/[^0-9]/g, '');
+                // Add thousand separators for display
+                let formatted = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                e.target.value = formatted;
+                // Store clean value in data attribute for calculations
+                e.target.dataset.clean = valor;
             }
         });
 
-        document.getElementById('sim-propertyValue').addEventListener('blur', function(e) {
-            if (e.target.value) {
-                const valor = e.target.value.replace(/\D/g, '');
-                e.target.value = valor;
+        document.getElementById('sim-propertyValue').addEventListener('focus', function(e) {
+            // Show clean number in input when focused
+            if (e.target.dataset.clean) {
+                e.target.value = e.target.dataset.clean;
             }
         });
     </script>
