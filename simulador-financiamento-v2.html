@@ -695,46 +695,58 @@
             }
 
             const labels = [];
-            const dataPoints = [];
+            const principalData = [];
+            const jurosData = [];
 
             for (let i = 0; i < data.tabela.length; i += 12) {
                 const row = data.tabela[i];
                 const ano = Math.floor(i / 12);
                 labels.push(`${ano}a`);
-                dataPoints.push(row.saldoRestante);
+                principalData.push(row.principal);
+                jurosData.push(row.juros);
             }
 
             const lastRow = data.tabela[data.tabela.length - 1];
             labels.push(`${data.tempo}a`);
-            dataPoints.push(lastRow.saldoRestante);
+            principalData.push(lastRow.principal);
+            jurosData.push(lastRow.juros);
 
             simChartInstance = new Chart(canvas, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Saldo Restante (¥)',
-                        data: dataPoints,
-                        borderColor: '#2dd4a4',
-                        backgroundColor: 'rgba(45, 212, 164, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: '#2dd4a4'
-                    }]
+                    datasets: [
+                        {
+                            label: 'Principal (¥)',
+                            data: principalData,
+                            backgroundColor: '#2dd4a4',
+                            borderColor: '#2dd4a4',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Juros (¥)',
+                            data: jurosData,
+                            backgroundColor: '#f59e0b',
+                            borderColor: '#f59e0b',
+                            borderWidth: 1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    indexAxis: 'x',
                     plugins: {
                         legend: {
-                            display: false
+                            display: true,
+                            labels: {
+                                color: '#888'
+                            }
                         }
                     },
                     scales: {
                         y: {
+                            stacked: false,
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
@@ -760,48 +772,12 @@
         }
 
         // ===== TASK 7: Table Rendering with Virtual Scrolling =====
-        const ROWS_PER_VIEWPORT = 30;
-
         function renderizarTabela(tabela) {
             const tbody = document.getElementById('sim-tableBody');
             tbody.innerHTML = '';
 
-            const startIndex = 0;
-            const endIndex = Math.min(ROWS_PER_VIEWPORT, tabela.length);
-
-            for (let i = startIndex; i < endIndex; i++) {
-                const row = tabela[i];
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${row.numero}</td>
-                    <td>${formatarData(row.data)}</td>
-                    <td>${formatarMoeda(row.saldoAnterior)}</td>
-                    <td>${formatarMoeda(row.pagamento)}</td>
-                    <td>${formatarMoeda(row.principal)}</td>
-                    <td>${formatarMoeda(row.juros)}</td>
-                    <td>${formatarMoeda(row.saldoRestante)}</td>
-                `;
-                tbody.appendChild(tr);
-            }
-
-            const container = document.querySelector('.sim-table-container');
-            container.removeEventListener('scroll', function() {});
-            container.addEventListener('scroll', function() {
-                handleTableScroll(this, tabela);
-            }, { passive: true });
-        }
-
-        function handleTableScroll(container, tabela) {
-            const scrollTop = container.scrollTop;
-            const rowHeight = 40;
-            const visibleRows = Math.ceil(container.clientHeight / rowHeight);
-            const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - 5);
-            const endIndex = Math.min(startIndex + visibleRows + 10, tabela.length);
-
-            const tbody = document.getElementById('sim-tableBody');
-            tbody.innerHTML = '';
-
-            for (let i = startIndex; i < endIndex; i++) {
+            // Render ALL 600 rows
+            for (let i = 0; i < tabela.length; i++) {
                 const row = tabela[i];
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -834,6 +810,21 @@
 
             window.simData = null;
         };
+
+        // ===== Input Formatting with Thousand Separator =====
+        document.getElementById('sim-propertyValue').addEventListener('input', function(e) {
+            let valor = e.target.value.replace(/\D/g, '');
+            if (valor) {
+                e.target.value = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+        });
+
+        document.getElementById('sim-propertyValue').addEventListener('blur', function(e) {
+            if (e.target.value) {
+                const valor = e.target.value.replace(/\D/g, '');
+                e.target.value = valor;
+            }
+        });
     </script>
 </body>
 </html>
