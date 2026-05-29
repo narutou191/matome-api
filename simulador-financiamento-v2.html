@@ -823,37 +823,27 @@
             // Render first 15 months
             renderizarMesesAdicionais();
 
-            // Setup infinite scroll observer
+            // Setup infinite scroll with scroll listener
             const container = document.getElementById('sim-tableContainer');
 
-            const observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && !tableState.isLoading && tableState.currentIndex < tabela.length) {
+            // Remove old scroll listener if exists
+            container.onscroll = null;
+
+            container.addEventListener('scroll', function handleScroll() {
+                // Check if near bottom (within 200px)
+                if (
+                    !tableState.isLoading &&
+                    tableState.currentIndex < tabela.length &&
+                    container.scrollHeight - container.scrollTop - container.clientHeight < 200
+                ) {
                     tableState.isLoading = true;
-                    // Small delay to avoid loading too fast
+                    // Small delay to batch loading
                     setTimeout(() => {
                         renderizarMesesAdicionais();
                         tableState.isLoading = false;
-                    }, 100);
+                    }, 50);
                 }
-            }, {
-                root: container,
-                threshold: 0.1,
-                rootMargin: '100px'
-            });
-
-            // Create sentinel element at the end of table
-            setTimeout(() => {
-                let sentinel = tbody.querySelector('.sim-table-sentinel');
-                if (sentinel) sentinel.remove();
-
-                if (tableState.currentIndex < tabela.length) {
-                    const sentinelTr = document.createElement('tr');
-                    sentinelTr.className = 'sim-table-sentinel';
-                    sentinelTr.style.display = 'none';
-                    tbody.appendChild(sentinelTr);
-                    observer.observe(sentinelTr);
-                }
-            }, 0);
+            }, { passive: true });
         }
 
         // ===== TASK 8: Reset Function =====
