@@ -816,24 +816,8 @@
         };
 
         // ===== Input Formatting with Thousand Separator =====
-        document.getElementById('sim-propertyValue').addEventListener('blur', function(e) {
-            if (e.target.value) {
-                // Remove all non-digits
-                let valor = e.target.value.replace(/[^0-9]/g, '');
-                // Add thousand separators for display
-                let formatted = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                e.target.value = formatted;
-                // Store clean value in data attribute for calculations
-                e.target.dataset.clean = valor;
-            }
-        });
-
-        document.getElementById('sim-propertyValue').addEventListener('focus', function(e) {
-            // Show clean number in input when focused
-            if (e.target.dataset.clean) {
-                e.target.value = e.target.dataset.clean;
-            }
-        });
+        // Removed blur/focus listeners that were interfering with input
+        // Input now accepts plain numbers (validation cleans them before calculation)
     </script>
 </body>
 </html>
