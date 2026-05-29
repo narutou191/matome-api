@@ -699,62 +699,84 @@
             }
 
             const labels = [];
-            const principalData = [];
-            const jurosData = [];
+            const principalAcumuladoData = [];
+            const jurosAcumuladoData = [];
 
-            for (let i = 0; i < data.tabela.length; i += 12) {
+            let principalAcumulado = 0;
+            let jurosAcumulado = 0;
+
+            // Calculate accumulated principal and interest for every month
+            for (let i = 0; i < data.tabela.length; i++) {
                 const row = data.tabela[i];
-                const ano = Math.floor(i / 12);
-                labels.push(`${ano}a`);
-                principalData.push(row.principal);
-                jurosData.push(row.juros);
+                principalAcumulado += row.principal;
+                jurosAcumulado += row.juros;
+
+                // Add data point every month (or every 6 months for cleaner display)
+                if (i % 6 === 0) {
+                    const mes = row.numero;
+                    const ano = Math.floor(mes / 12);
+                    const mesDentroAno = (mes % 12) || 12;
+                    labels.push(`${ano}a${mesDentroAno}m`);
+                    principalAcumuladoData.push(Math.round(principalAcumulado));
+                    jurosAcumuladoData.push(Math.round(jurosAcumulado));
+                }
             }
 
+            // Ensure last point is included
             const lastRow = data.tabela[data.tabela.length - 1];
-            labels.push(`${data.tempo}a`);
-            principalData.push(lastRow.principal);
-            jurosData.push(lastRow.juros);
+            if ((data.tabela.length - 1) % 6 !== 0) {
+                labels.push(`${data.tempo}a`);
+                principalAcumuladoData.push(Math.round(principalAcumulado));
+                jurosAcumuladoData.push(Math.round(jurosAcumulado));
+            }
 
             simChartInstance = new Chart(canvas, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Principal (¥)',
-                            data: principalData,
-                            backgroundColor: '#2dd4a4',
+                            label: 'Principal Acumulado (¥)',
+                            data: principalAcumuladoData,
                             borderColor: '#2dd4a4',
-                            borderWidth: 1
+                            backgroundColor: 'rgba(45, 212, 164, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#2dd4a4'
                         },
                         {
-                            label: 'Juros (¥)',
-                            data: jurosData,
-                            backgroundColor: '#f59e0b',
+                            label: 'Juros Acumulados (¥)',
+                            data: jurosAcumuladoData,
                             borderColor: '#f59e0b',
-                            borderWidth: 1
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#f59e0b'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    indexAxis: 'x',
                     plugins: {
                         legend: {
                             display: true,
                             labels: {
-                                color: '#888'
+                                color: '#888',
+                                padding: 15
                             }
                         }
                     },
                     scales: {
                         y: {
-                            stacked: false,
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '¥' + value.toLocaleString('ja-JP');
+                                    return '¥' + (value / 1000000).toFixed(1) + 'M';
                                 },
                                 color: '#888'
                             },
