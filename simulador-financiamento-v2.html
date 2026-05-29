@@ -775,13 +775,14 @@
             });
         }
 
-        // ===== TASK 7: Table Rendering with Virtual Scrolling =====
+        // ===== TASK 7: Table Rendering (Limited to 15 months for better UX) =====
         function renderizarTabela(tabela) {
             const tbody = document.getElementById('sim-tableBody');
             tbody.innerHTML = '';
 
-            // Render ALL 600 rows
-            for (let i = 0; i < tabela.length; i++) {
+            // Render only first 15 rows (15 months) for better UX
+            const limite = Math.min(15, tabela.length);
+            for (let i = 0; i < limite; i++) {
                 const row = tabela[i];
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
