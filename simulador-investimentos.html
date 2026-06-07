@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Investimentos em Ações Japonesas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #0f0f1e;
+            --border-color: #333333;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888888;
+            --accent-gold: #d4af37;
+            --accent-green: #2dd4a4;
+            --accent-blue: #3b82f6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ff6b6b;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .sim-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .sim-header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 2px solid var(--accent-gold);
+            margin-bottom: 40px;
+        }
+
+        .sim-header h1 {
+            font-size: 36px;
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .sim-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Form Section */
+        .sim-section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .sim-form {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .sim-form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sim-form-group label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .sim-form-group input {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .sim-form-group input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Form Error */
+        .sim-form-error {
+            grid-column: 1 / -1;
+            background-color: rgba(255, 107, 107, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* Buttons */
+        .sim-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .sim-btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), #c99a1f);
+            color: #000000;
+        }
+
+        .sim-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Tabs */
+        .sim-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
+            overflow-x: auto;
+            gap: 0;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sim-tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .sim-tabs::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        .sim-tabs::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .sim-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 15px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+
+        .sim-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .sim-tab-active {
+            color: var(--accent-gold);
+            border-bottom-color: var(--accent-gold);
+        }
+
+        /* Cards Grid */
+        .sim-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .sim-card {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .sim-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-4px);
+        }
+
+        .sim-card-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .sim-card-value {
+            font-size: 28px;
+            color: #ffffff;
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        /* Chart Container */
+        .sim-chart-container {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Table */
+        .sim-table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .sim-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--bg-tertiary);
+        }
+
+        .sim-table thead {
+            background-color: var(--bg-tertiary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .sim-table th {
+            padding: 15px;
+            text-align: right;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .sim-table th:first-child {
+            text-align: left;
+        }
+
+        .sim-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .sim-table td:first-child {
+            text-align: left;
+            color: var(--text-secondary);
+        }
+
+        .sim-table tbody tr:nth-child(odd) {
+            background-color: #1a1a2e;
+        }
+
+        .sim-table tbody tr:nth-child(even) {
+            background-color: #1f1f3a;
+        }
+
+        .sim-table tbody tr:hover {
+            background-color: #252540;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1199px) {
+            .sim-form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sim-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .sim-header h1 {
+                font-size: 24px;
+            }
+
+            .sim-form {
+                grid-template-columns: 1fr;
+            }
+
+            .sim-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .sim-section {
+                padding: 20px;
+            }
+
+            .sim-card-value {
+                font-size: 20px;
+            }
+
+            .sim-chart-container {
+                height: 300px;
+            }
+
+            .sim-table {
+                font-size: 12px;
+            }
+
+            .sim-table th,
+            .sim-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sim-container">
+        <!-- Header -->
+        <header class="sim-header">
+            <h1>Simulador de Investimentos</h1>
+            <p class="sim-subtitle">Carteira de Ações Japonesas</p>
+        </header>
+
+        <!-- Section 1: Form -->
+        <section class="sim-section sim-form-section">
+            <form id="simForm" class="sim-form">
+                <div id="formError" class="sim-form-error" style="display: none;"></div>
+                <div class="sim-form-group">
+                    <label for="anos">Anos para simular</label>
+                    <input type="number" id="anos" name="anos" min="1" max="50" value="5" required>
+                </div>
+                <div class="sim-form-group">
+                    <label for="aporteMensal">Aporte mensal (¥)</label>
+                    <input type="number" id="aporteMensal" name="aporteMensal" min="0" value="0">
+                </div>
+                <button type="submit" class="sim-btn sim-btn-primary">Calcular</button>
+            </form>
+        </section>
+
+        <!-- Section 2: Results (hidden until calculated) -->
+        <section id="simResults" class="sim-section sim-results-section" style="display: none;">
+            <!-- Tabs -->
+            <div class="sim-tabs">
+                <button class="sim-tab-btn sim-tab-active" data-tab="carteira-total">Carteira Total</button>
+                <!-- Additional tabs for companies will be added by JS -->
+            </div>
+
+            <!-- Tab Content (dynamic) -->
+            <div class="sim-tab-content" id="tabContent">
+                <!-- Cards, Chart, Table will be rendered here by JS -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const empresas = [
+            {
+                id: 1,
+                nome: "パシフィックネット",
+                nomeEng: "Pacific Net",
+                codigo: 3021,
+                precoCom: 1905,
+                dividendoAnual: 38.10,
+                dataCompra: "26/05/2026",
+                quantidade: 1
+            },
+            {
+                id: 2,
+                nome: "学情",
+                nomeEng: "Gakujo",
+                codigo: 2301,
+                precoCom: 1598,
+                dividendoAnual: 31.96,
+                dataCompra: "26/05/2026",
+                quantidade: 1
+            },
+            {
+                id: 3,
+                nome: "アンビション DX HD",
+                nomeEng: "Ambition DX HD",
+                codigo: 3300,
+                precoCom: 2302,
+                dividendoAnual: 46.04,
+                dataCompra: "26/05/2026",
+                quantidade: 1
+            },
+            {
+                id: 4,
+                nome: "GMOフィナンシャルゲート",
+                nomeEng: "GMO Financial Gate",
+                codigo: 4051,
+                precoCom: 5870,
+                dividendoAnual: 117.40,
+                dataCompra: "26/05/2026",
+                quantidade: 1
+            },
+            {
+                id: 5,
+                nome: "カーブスHD",
+                nomeEng: "Curves HD",
+                codigo: 7085,
+                precoCom: 856,
+                dividendoAnual: 17.12,
+                dataCompra: "26/05/2026",
+                quantidade: 1
+            },
+            {
+                id: 6,
+                nome: "内田洋行",
+                nomeEng: "Uchida Yoko",
+                codigo: 8057,
+                precoCom: 2085,
+                dividendoAnual: 41.70,
+                dataCompra: "26/05/2026",
+                quantidade: 1
+            },
+            {
+                id: 7,
+                nome: "積水ハウス",
+                nomeEng: "Sekisui House",
+                codigo: 1928,
+                precoCom: 3356,
+                dividendoAnual: 67.12,
+                dataCompra: "26/06/2026",
+                quantidade: 1
+            },
+            {
+                id: 8,
+                nome: "ディップ",
+                nomeEng: "Dip",
+                codigo: 2379,
+                precoCom: 1764,
+                dividendoAnual: 35.28,
+                dataCompra: "26/06/2026",
+                quantidade: 1
+            },
+            {
+                id: 9,
+                nome: "フリービット",
+                nomeEng: "FreeBit",
+                codigo: 3843,
+                precoCom: 1425,
+                dividendoAnual: 28.50,
+                dataCompra: "26/06/2026",
+                quantidade: 1
+            },
+            {
+                id: 10,
+                nome: "三菱化工機",
+                nomeEng: "Mitsubishi Kakoki",
+                codigo: 6331,
+                precoCom: 3590,
+                dividendoAnual: 71.80,
+                dataCompra: "26/06/2026",
+                quantidade: 1
+            },
+            {
+                id: 11,
+                nome: "三菱鉛筆",
+                nomeEng: "Mitsubishi Pencil",
+                codigo: 7976,
+                precoCom: 2603,
+                dividendoAnual: 52.06,
+                dataCompra: "26/06/2026",
+                quantidade: 1
+            },
+            {
+                id: 12,
+                nome: "トーセイ",
+                nomeEng: "Tosei",
+                codigo: 8923,
+                precoCom: 1603,
+                dividendoAnual: 32.06,
+                dataCompra: "26/06/2026",
+                quantidade: 1
+            }
+        ];
+
+        const investimentoInicial = empresas.reduce((sum, e) => sum + (e.precoCom * e.quantidade), 0);
+
+        // Formatting functions
+        function formatarMoeda(valor) {
+            return '¥' + Math.round(valor).toLocaleString('ja-JP');
+        }
+
+        function formatarPercentual(valor) {
+            return valor.toFixed(2) + '%';
+        }
+
+        function formatarAno(ano) {
+            return ano.toString();
+        }
+
+        // Simulation function for entire portfolio
+        function simularCarteira(anos, aporteMensalInput) {
+            const aporteMensal = aporteMensalInput || 0;
+            const aporteAnual = aporteMensal * 12;
+            const cresc_anual = 0.08;
+
+            let resultados = [];
+            let saldoAnterior = investimentoInicial;
+
+            for (let ano = 1; ano <= anos; ano++) {
+                const anoAtual = 2026 + ano - 1;
+
+                const ganhosPrecoBruto = empresas.reduce((sum, empresa) => {
+                    const precoAnoAnterior = empresa.precoCom * Math.pow(1 + cresc_anual, ano - 1);
+                    const precoAnoAtual = empresa.precoCom * Math.pow(1 + cresc_anual, ano);
+                    const ganho = (precoAnoAtual - precoAnoAnterior) * empresa.quantidade;
+                    return sum + ganho;
+                }, 0);
+
+                const dividendosAno = empresas.reduce((sum, empresa) => {
+                    return sum + (empresa.dividendoAnual * empresa.quantidade);
+                }, 0);
+
+                const saldoFinal = saldoAnterior + aporteAnual + ganhosPrecoBruto + dividendosAno;
+
+                resultados.push({
+                    ano: anoAtual,
+                    saldoInicial: saldoAnterior,
+                    aportes: aporteAnual,
+                    ganhospreco: ganhosPrecoBruto,
+                    dividendos: dividendosAno,
+                    saldoFinal: saldoFinal
+                });
+
+                saldoAnterior = saldoFinal;
+            }
+
+            return resultados;
+        }
+
+        // Simulation function for specific company
+        function simularEmpresa(empresaId, anos, aporteMensalInput) {
+            const empresa = empresas.find(e => e.id === empresaId);
+            if (!empresa) return [];
+
+            const aporteMensal = aporteMensalInput || 0;
+            const aporteAnual = aporteMensal * 12;
+            const cresc_anual = 0.08;
+
+            let resultados = [];
+            const investInicial = empresa.precoCom * empresa.quantidade;
+            let saldoAnterior = investInicial;
+
+            for (let ano = 1; ano <= anos; ano++) {
+                const anoAtual = 2026 + ano - 1;
+
+                const precoAnoAnterior = empresa.precoCom * Math.pow(1 + cresc_anual, ano - 1);
+                const precoAnoAtual = empresa.precoCom * Math.pow(1 + cresc_anual, ano);
+                const ganhospreco = (precoAnoAtual - precoAnoAnterior) * empresa.quantidade;
+
+                const dividendos = empresa.dividendoAnual * empresa.quantidade;
+
+                const saldoFinal = saldoAnterior + aporteAnual + ganhospreco + dividendos;
+
+                resultados.push({
+                    ano: anoAtual,
+                    saldoInicial: saldoAnterior,
+                    aportes: aporteAnual,
+                    ganhospreco: ganhospreco,
+                    dividendos: dividendos,
+                    saldoFinal: saldoFinal
+                });
+
+                saldoAnterior = saldoFinal;
+            }
+
+            return resultados;
+        }
+
+        // Calculate metrics
+        function calcularMetricas(resultados, empresaId = null) {
+            if (resultados.length === 0) return null;
+
+            const ultimoAno = resultados[resultados.length - 1];
+            const dividendosTotal = resultados.reduce((sum, ano) => sum + ano.dividendos, 0);
+            const ganhosPrecoTotal = resultados.reduce((sum, ano) => sum + ano.ganhospreco, 0);
+            const aportesTotal = resultados.reduce((sum, ano) => sum + ano.aportes, 0);
+
+            const investimentoTotal = empresaId
+                ? empresas.find(e => e.id === empresaId).precoCom + aportesTotal
+                : investimentoInicial + aportesTotal;
+
+            const valorAtual = ultimoAno.saldoFinal;
+            const roi = ((valorAtual - investimentoTotal) / investimentoTotal) * 100;
+
+            return {
+                investimentoTotal,
+                valorAtual,
+                dividendosTotal,
+                roi
+            };
+        }
+
+        // Render tabs
+        function renderizarAbas() {
+            const tabsContainer = document.querySelector('.sim-tabs');
+            tabsContainer.innerHTML = '';
+
+            const btnCarteira = document.createElement('button');
+            btnCarteira.type = 'button';
+            btnCarteira.className = 'sim-tab-btn sim-tab-active';
+            btnCarteira.textContent = 'Carteira Total';
+            btnCarteira.dataset.tab = 'carteira-total';
+            btnCarteira.addEventListener('click', () => trocarAba('carteira-total'));
+            tabsContainer.appendChild(btnCarteira);
+
+            empresas.forEach(empresa => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'sim-tab-btn';
+                btn.textContent = empresa.nomeEng || empresa.nome;
+                btn.dataset.tab = `empresa-${empresa.id}`;
+                btn.addEventListener('click', () => trocarAba(`empresa-${empresa.id}`));
+                tabsContainer.appendChild(btn);
+            });
+        }
+
+        function trocarAba(tabId) {
+            document.querySelectorAll('.sim-tab-btn').forEach(btn => {
+                btn.classList.remove('sim-tab-active');
+            });
+
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('sim-tab-active');
+            renderizarConteudoAba(tabId);
+        }
+
+        // Render cards
+        function renderizarCards(metricas) {
+            const cardsHtml = `
+                <div class="sim-cards">
+                    <div class="sim-card">
+                        <div class="sim-card-label">Investimento Total</div>
+                        <div class="sim-card-value">${formatarMoeda(metricas.investimentoTotal)}</div>
+                    </div>
+                    <div class="sim-card">
+                        <div class="sim-card-label">Valor Atual</div>
+                        <div class="sim-card-value">${formatarMoeda(metricas.valorAtual)}</div>
+                    </div>
+                    <div class="sim-card">
+                        <div class="sim-card-label">Dividendos Acumulados</div>
+                        <div class="sim-card-value">${formatarMoeda(metricas.dividendosTotal)}</div>
+                    </div>
+                    <div class="sim-card">
+                        <div class="sim-card-label">ROI %</div>
+                        <div class="sim-card-value">${formatarPercentual(metricas.roi)}</div>
+                    </div>
+                </div>
+            `;
+            return cardsHtml;
+        }
+
+        // Render table
+        function renderizarTabela(resultados) {
+            let tabelaHtml = `
+                <div class="sim-table-container">
+                    <table class="sim-table">
+                        <thead>
+                            <tr>
+                                <th>Ano</th>
+                                <th>Saldo Inicial</th>
+                                <th>Aportes</th>
+                                <th>Ganhos Preço</th>
+                                <th>Dividendos</th>
+                                <th>Saldo Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            resultados.forEach(linha => {
+                tabelaHtml += `
+                    <tr>
+                        <td>${formatarAno(linha.ano)}</td>
+                        <td>${formatarMoeda(linha.saldoInicial)}</td>
+                        <td>${formatarMoeda(linha.aportes)}</td>
+                        <td>${formatarMoeda(linha.ganhospreco)}</td>
+                        <td>${formatarMoeda(linha.dividendos)}</td>
+                        <td>${formatarMoeda(linha.saldoFinal)}</td>
+                    </tr>
+                `;
+            });
+
+            tabelaHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return tabelaHtml;
+        }
+
+        // Chart instance
+        let chartInstance = null;
+
+        function renderizarGrafico(resultados) {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('simChart').getContext('2d');
+
+            const labels = resultados.map(r => r.ano.toString());
+            const data = resultados.map(r => r.saldoFinal);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Valor da Carteira (¥)',
+                        data: data,
+                        borderColor: '#2dd4a4',
+                        backgroundColor: 'rgba(45, 212, 164, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#2dd4a4',
+                        pointBorderColor: '#2dd4a4',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888888' },
+                            grid: { color: '#333333' }
+                        },
+                        y: {
+                            ticks: { color: '#888888' },
+                            grid: { color: '#333333' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Main content renderer
+        function renderizarConteudoAba(tabId) {
+            const tabContent = document.getElementById('tabContent');
+            let resultados, metricas, empresaId;
+
+            if (tabId === 'carteira-total') {
+                const anos = parseInt(document.getElementById('anos').value);
+                const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+                resultados = simularCarteira(anos, aporteMensal);
+                metricas = calcularMetricas(resultados);
+            } else {
+                empresaId = parseInt(tabId.replace('empresa-', ''));
+                const anos = parseInt(document.getElementById('anos').value);
+                const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+                resultados = simularEmpresa(empresaId, anos, aporteMensal);
+                metricas = calcularMetricas(resultados, empresaId);
+            }
+
+            let conteudo = renderizarCards(metricas);
+            conteudo += '<div class="sim-chart-container"><canvas id="simChart"></canvas></div>';
+            conteudo += renderizarTabela(resultados);
+
+            tabContent.innerHTML = conteudo;
+
+            setTimeout(() => renderizarGrafico(resultados), 100);
+        }
+
+        // Form submission handler
+        document.getElementById('simForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const anos = parseInt(document.getElementById('anos').value);
+            const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+            const errorDiv = document.getElementById('formError');
+
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            let erro = null;
+
+            if (isNaN(anos) || anos < 1 || anos > 50) {
+                erro = 'Anos deve estar entre 1 e 50';
+            } else if (isNaN(aporteMensal) || aporteMensal < 0) {
+                erro = 'Aporte inválido';
+            }
+
+            if (erro) {
+                errorDiv.textContent = '❌ ' + erro;
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            document.getElementById('simResults').style.display = 'block';
+            renderizarAbas();
+            renderizarConteudoAba('carteira-total');
+            document.getElementById('simResults').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
