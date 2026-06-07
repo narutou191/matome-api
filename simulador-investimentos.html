@@ -1,10 +1,31 @@
+<!--
+    Simulador de Investimentos em Ações Japonesas v2.0
+
+    Compatível com: WordPress 5.0+, Elementor 3.0+
+
+    INSTRUÇÕES ELEMENTOR:
+    1. Abra sua página no Elementor
+    2. Adicione um widget "Custom HTML"
+    3. Copie TODO o conteúdo deste arquivo (de <!DOCTYPE> até </html>)
+    4. Cole no widget Custom HTML
+    5. Salve a página
+
+    Obs: Não precisa de <!DOCTYPE> ou <html> tags se colar apenas a <style> e <script> + <div class="sim-container">
+
+    COMPATIBILIDADE:
+    - Sem conflitos jQuery
+    - CSS com prefixo 'sim-' para isolar
+    - JavaScript em namespace 'window.simuladorInvestimentos'
+    - Chart.js via CDN jsdelivr
+-->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Investimentos em Ações Japonesas</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -383,7 +404,13 @@
     </div>
 
     <script>
-        const empresas = [
+        // Namespace para evitar conflitos com outros scripts
+        window.simuladorInvestimentos = window.simuladorInvestimentos || {};
+
+        (function(app) {
+            'use strict';
+
+            const empresas = [
             {
                 id: 1,
                 nome: "パシフィックネット",
@@ -898,6 +925,20 @@
             renderizarConteudoAba('carteira-total');
             document.getElementById('simResults').scrollIntoView({ behavior: 'smooth' });
         });
+
+        // Exportar para namespace global
+        app.init = function() {
+            console.log('Simulador de Investimentos carregado');
+        };
+
+        // Auto-init ao carregar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', app.init);
+        } else {
+            app.init();
+        }
+
+        })(window.simuladorInvestimentos);
     </script>
 </body>
 </html>
