@@ -186,6 +186,86 @@ body {
     }
 }
 
+/* Compound Interest Section */
+.sim-composto-section {
+    background: linear-gradient(135deg, rgba(45, 212, 164, 0.08), rgba(212, 175, 55, 0.05));
+    border: 1px solid var(--accent-green);
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.sim-composto-title {
+    font-size: 18px;
+    color: #2dd4a4;
+    margin-bottom: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.sim-composto-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.sim-composto-item {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.sim-composto-item.highlight {
+    background: linear-gradient(135deg, rgba(45, 212, 164, 0.15), rgba(45, 212, 164, 0.05));
+    border-color: var(--accent-green);
+    box-shadow: 0 0 15px rgba(45, 212, 164, 0.2);
+}
+
+.sim-composto-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.sim-composto-valor {
+    font-size: 28px;
+    color: #2dd4a4;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.sim-composto-pct {
+    font-size: 14px;
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+.sim-composto-desc {
+    font-size: 14px;
+    color: #2dd4a4;
+    text-align: center;
+    padding: 12px;
+    background-color: rgba(45, 212, 164, 0.1);
+    border-radius: 4px;
+    line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+    .sim-composto-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sim-composto-valor {
+        font-size: 22px;
+    }
+}
+
 .sim-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -455,14 +535,19 @@ function calcularMetricas(resultados) {
 
     let totalAcoes = 0;
     let precoMedio = 0;
+    let acoesCompradasManualmente = 0;
 
     empresas.forEach(e => {
         const qtd = e.quantidade + (acoesPerMes * meses);
         totalAcoes += qtd;
         const precoAtual = e.precoCom * Math.pow(1 + crescMensal, meses);
         precoMedio += precoAtual * qtd;
+        acoesCompradasManualmente += e.quantidade + (acoesPerMes * meses);
     });
+
+    const acoesComDividendos = totalAcoes - acoesCompradasManualmente;
     precoMedio = precoMedio / totalAcoes;
+    const percentualComDividendos = (acoesComDividendos / totalAcoes) * 100;
 
     return {
         investimentoTotal,
@@ -470,7 +555,10 @@ function calcularMetricas(resultados) {
         dividendosTotal,
         roi,
         totalAcoes,
-        precoMedio
+        precoMedio,
+        acoesCompradasManualmente,
+        acoesComDividendos,
+        percentualComDividendos
     };
 }
 
@@ -519,6 +607,29 @@ function renderizarCards(metricas) {
                 <div class="sim-card-label">ROI %</div>
                 <div class="sim-card-value">${formatarPercentual(metricas.roi)}</div>
             </div>
+        </div>
+
+        <!-- Efeito dos Juros Compostos -->
+        <div class="sim-composto-section">
+            <h3 class="sim-composto-title">📈 Efeito dos Juros Compostos (Reinvestimento de Dividendos)</h3>
+            <div class="sim-composto-grid">
+                <div class="sim-composto-item">
+                    <div class="sim-composto-label">Ações Compradas Manualmente</div>
+                    <div class="sim-composto-valor">${Math.round(metricas.acoesCompradasManualmente)}</div>
+                    <div class="sim-composto-pct">100%</div>
+                </div>
+                <div class="sim-composto-item highlight">
+                    <div class="sim-composto-label">Ações Adquiridas com Dividendos</div>
+                    <div class="sim-composto-valor">${Math.round(metricas.acoesComDividendos)}</div>
+                    <div class="sim-composto-pct">${Math.round(metricas.percentualComDividendos)}%</div>
+                </div>
+                <div class="sim-composto-item">
+                    <div class="sim-composto-label">Total de Ações</div>
+                    <div class="sim-composto-valor">${Math.round(metricas.totalAcoes)}</div>
+                    <div class="sim-composto-pct">100%</div>
+                </div>
+            </div>
+            <p class="sim-composto-desc">💡 O reinvestimento de dividendos gerou ${Math.round(metricas.acoesComDividendos)} ações extras (${Math.round(metricas.percentualComDividendos)}% do seu portfólio), demonstrando o poder do juros compostos!</p>
         </div>
     `;
 }
