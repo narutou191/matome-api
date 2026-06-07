@@ -1,0 +1,596 @@
+<!--
+  VERSÃO CODEPEN - Simulador de Investimentos
+  Cole APENAS este conteúdo em um pen do CodePen
+
+  INSTRUÇÕES:
+  1. Vá para codepen.io
+  2. Clique em "Create" > "New Pen"
+  3. Clique em Settings > HTML
+  4. Na seção HTML, copie/cole TODO este arquivo
+  5. Salve
+-->
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a2e;
+    --bg-tertiary: #0f0f1e;
+    --border-color: #333333;
+    --text-primary: #e0e0e0;
+    --text-secondary: #888888;
+    --accent-gold: #d4af37;
+    --accent-green: #2dd4a4;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+}
+
+.sim-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.sim-header {
+    text-align: center;
+    padding: 40px 20px;
+    border-bottom: 2px solid var(--accent-gold);
+    margin-bottom: 40px;
+}
+
+.sim-header h1 {
+    font-size: 44px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.sim-subtitle {
+    font-size: 17px;
+    color: var(--text-secondary);
+}
+
+.sim-section {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.sim-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.sim-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.sim-form-group label {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.sim-form-group input {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 17px;
+}
+
+.sim-form-group input:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.sim-form-error {
+    grid-column: 1 / -1;
+    background-color: rgba(255, 107, 107, 0.2);
+    border: 1px solid #ff6b6b;
+    color: #ff6b6b;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.sim-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent-gold), #c99a1f);
+    color: #000000;
+}
+
+.sim-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.sim-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 30px;
+    overflow-x: auto;
+    gap: 0;
+}
+
+.sim-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 15px 20px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+}
+
+.sim-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.sim-tab-active {
+    color: var(--accent-gold);
+    border-bottom-color: var(--accent-gold);
+}
+
+.sim-comentario {
+    background: linear-gradient(135deg, rgba(45, 212, 164, 0.15), rgba(212, 175, 55, 0.1));
+    border: 1px solid var(--accent-green);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 25px;
+    font-size: 15px;
+    color: #2dd4a4;
+    text-align: center;
+    font-weight: 500;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sim-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.sim-card {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 25px;
+    transition: all 0.3s ease;
+}
+
+.sim-card:hover {
+    border-color: var(--accent-gold);
+    transform: translateY(-4px);
+}
+
+.sim-card-label {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.sim-card-value {
+    font-size: 34px;
+    color: #ffffff;
+    font-weight: bold;
+    word-break: break-word;
+}
+
+.sim-card-detail {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+}
+
+.sim-chart-container {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    height: 400px;
+}
+
+.sim-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--bg-tertiary);
+}
+
+.sim-table thead {
+    background-color: var(--bg-tertiary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.sim-table th {
+    padding: 15px;
+    text-align: right;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.sim-table th:first-child {
+    text-align: left;
+}
+
+.sim-table td {
+    padding: 12px 15px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.sim-table td:first-child {
+    text-align: left;
+    color: var(--text-secondary);
+}
+
+.sim-table tbody tr:nth-child(odd) {
+    background-color: #1a1a2e;
+}
+
+.sim-table tbody tr:nth-child(even) {
+    background-color: #1f1f3a;
+}
+
+@media (max-width: 1199px) {
+    .sim-form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .sim-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .sim-header h1 {
+        font-size: 28px;
+    }
+    .sim-form {
+        grid-template-columns: 1fr;
+    }
+    .sim-cards {
+        grid-template-columns: 1fr;
+    }
+    .sim-card-value {
+        font-size: 24px;
+    }
+}
+</style>
+
+<div class="sim-container">
+    <header class="sim-header">
+        <h1>Simulador de Investimentos</h1>
+        <p class="sim-subtitle">Carteira de Ações Japonesas</p>
+    </header>
+
+    <section class="sim-section sim-form-section">
+        <form id="simForm" class="sim-form">
+            <div id="formError" class="sim-form-error" style="display: none;"></div>
+            <div class="sim-form-group">
+                <label for="meses">Meses para simular</label>
+                <input type="number" id="meses" name="meses" min="1" max="600" value="60" required>
+            </div>
+            <div class="sim-form-group">
+                <label for="acoesPerMes">Ações por mês</label>
+                <input type="number" id="acoesPerMes" name="acoesPerMes" min="0" value="1" step="0.5">
+            </div>
+            <button type="submit" class="sim-btn">Calcular</button>
+        </form>
+    </section>
+
+    <section id="simResults" class="sim-section sim-results-section" style="display: none;">
+        <div class="sim-tabs">
+            <button class="sim-tab-btn sim-tab-active" data-tab="carteira-total">Carteira Total</button>
+        </div>
+        <div class="sim-tab-content" id="tabContent"></div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+const empresas = [
+    {id: 1, nome: "Pacific Net", nomeEng: "Pacific Net", codigo: 3021, precoCom: 1905, dividendoAnual: 38.10, quantidade: 1},
+    {id: 2, nome: "Gakujo", nomeEng: "Gakujo", codigo: 2301, precoCom: 1598, dividendoAnual: 31.96, quantidade: 1},
+    {id: 3, nome: "Ambition DX HD", nomeEng: "Ambition DX HD", codigo: 3300, precoCom: 2302, dividendoAnual: 46.04, quantidade: 1},
+    {id: 4, nome: "GMO Financial Gate", nomeEng: "GMO Financial Gate", codigo: 4051, precoCom: 5870, dividendoAnual: 117.40, quantidade: 1},
+    {id: 5, nome: "Curves HD", nomeEng: "Curves HD", codigo: 7085, precoCom: 856, dividendoAnual: 17.12, quantidade: 1},
+    {id: 6, nome: "Uchida Yoko", nomeEng: "Uchida Yoko", codigo: 8057, precoCom: 2085, dividendoAnual: 41.70, quantidade: 1},
+    {id: 7, nome: "Sekisui House", nomeEng: "Sekisui House", codigo: 1928, precoCom: 3356, dividendoAnual: 67.12, quantidade: 1},
+    {id: 8, nome: "Dip", nomeEng: "Dip", codigo: 2379, precoCom: 1764, dividendoAnual: 35.28, quantidade: 1},
+    {id: 9, nome: "FreeBit", nomeEng: "FreeBit", codigo: 3843, precoCom: 1425, dividendoAnual: 28.50, quantidade: 1},
+    {id: 10, nome: "Mitsubishi Kakoki", nomeEng: "Mitsubishi Kakoki", codigo: 6331, precoCom: 3590, dividendoAnual: 71.80, quantidade: 1},
+    {id: 11, nome: "Mitsubishi Pencil", nomeEng: "Mitsubishi Pencil", codigo: 7976, precoCom: 2603, dividendoAnual: 52.06, quantidade: 1},
+    {id: 12, nome: "Tosei", nomeEng: "Tosei", codigo: 8923, precoCom: 1603, dividendoAnual: 32.06, quantidade: 1},
+];
+
+const investimentoInicial = empresas.reduce((sum, e) => sum + (e.precoCom * e.quantidade), 0);
+
+function formatarMoeda(valor) {
+    return '¥' + Math.round(valor).toLocaleString('ja-JP');
+}
+
+function formatarPercentual(valor) {
+    return valor.toFixed(2) + '%';
+}
+
+function simularCarteira(meses, acoesPerMes) {
+    const crescMensal = Math.pow(1.08, 1/12) - 1;
+    let resultados = [];
+    let quantidadeAcoes = {};
+    let saldoAnterior = 0;
+
+    empresas.forEach(e => {
+        quantidadeAcoes[e.id] = e.quantidade;
+        saldoAnterior += e.precoCom * e.quantidade;
+    });
+
+    for (let mes = 1; mes <= meses; mes++) {
+        const precoMes = {};
+        empresas.forEach(e => {
+            precoMes[e.id] = e.precoCom * Math.pow(1 + crescMensal, mes);
+        });
+
+        let ganhosPrecoBruto = 0;
+        empresas.forEach(e => {
+            const precoMesAnterior = e.precoCom * Math.pow(1 + crescMensal, mes - 1);
+            const precoMesAtual = precoMes[e.id];
+            const ganho = (precoMesAtual - precoMesAnterior) * quantidadeAcoes[e.id];
+            ganhosPrecoBruto += ganho;
+        });
+
+        // Aportes mensais: compra de novas ações
+        let custoNovasAcoes = 0;
+        empresas.forEach(e => {
+            const precoMedio = (e.precoCom * Math.pow(1 + crescMensal, mes - 1) + precoMes[e.id]) / 2;
+            const novasAcoes = acoesPerMes * e.quantidade;
+            custoNovasAcoes += precoMedio * novasAcoes;
+            quantidadeAcoes[e.id] += novasAcoes;
+        });
+
+        // Dividendos recebidos
+        const dividendosMes = empresas.reduce((sum, empresa) => {
+            return sum + ((empresa.dividendoAnual / 12) * quantidadeAcoes[empresa.id]);
+        }, 0);
+
+        // REINVESTIMENTO: usar dividendos para comprar mais ações
+        // Dividendos são reinvestidos proporcionalmente nas 12 empresas
+        const precoMedioPorAcao = empresas.reduce((sum, e) => sum + precoMes[e.id], 0) / 12;
+        const acoesCompradasComDividendos = dividendosMes / precoMedioPorAcao;
+        const acoesPerEmpresa = acoesCompradasComDividendos / 12;
+
+        empresas.forEach(e => {
+            quantidadeAcoes[e.id] += acoesPerEmpresa;
+        });
+
+        const valorCarteiraFinal = empresas.reduce((sum, empresa) => {
+            return sum + (quantidadeAcoes[empresa.id] * precoMes[empresa.id]);
+        }, 0);
+
+        resultados.push({
+            ano: mes,
+            saldoInicial: saldoAnterior,
+            aportes: custoNovasAcoes,
+            ganhospreco: ganhosPrecoBruto,
+            dividendos: dividendosMes,
+            saldoFinal: valorCarteiraFinal
+        });
+
+        saldoAnterior = valorCarteiraFinal;
+    }
+
+    return resultados;
+}
+
+function calcularMetricas(resultados) {
+    if (resultados.length === 0) return null;
+
+    const ultimoMes = resultados[resultados.length - 1];
+    const dividendosTotal = resultados.reduce((sum, mes) => sum + mes.dividendos, 0);
+    const aportesTotal = resultados.reduce((sum, mes) => sum + mes.aportes, 0);
+    const investimentoTotal = investimentoInicial + aportesTotal;
+    const valorAtual = ultimoMes.saldoFinal;
+    const roi = ((valorAtual - investimentoTotal) / investimentoTotal) * 100;
+
+    const meses = resultados.length;
+    const crescMensal = Math.pow(1.08, 1/12) - 1;
+    const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
+
+    let totalAcoes = 0;
+    let precoMedio = 0;
+
+    empresas.forEach(e => {
+        const qtd = e.quantidade + (acoesPerMes * meses);
+        totalAcoes += qtd;
+        const precoAtual = e.precoCom * Math.pow(1 + crescMensal, meses);
+        precoMedio += precoAtual * qtd;
+    });
+    precoMedio = precoMedio / totalAcoes;
+
+    return {
+        investimentoTotal,
+        valorAtual,
+        dividendosTotal,
+        roi,
+        totalAcoes,
+        precoMedio
+    };
+}
+
+function gerarComentarioAleatorio(metricas) {
+    const comentarios = [
+        "Paciência é a chave do sucesso no mercado!",
+        "Quanto mais você investe, mais composto trabalha para você!",
+        "Diversificação com ações japonesas é sabedoria financeira.",
+        "Dividendos são a recompensa da paciência do investidor.",
+        "Cada mês de compra é um passo em direção à liberdade financeira!",
+        "O poder do juros compostos está a seu favor!",
+        "Ações de qualidade sempre compensam no longo prazo.",
+        "Você está investindo no futuro - continue firme!",
+        "Mercado sobe e desce, mas o investidor consistente sempre vence.",
+        "Construir riqueza leva tempo, mas você já começou!",
+    ];
+
+    const comentario = comentarios[Math.floor(Math.random() * comentarios.length)];
+    let prefixo = "📈";
+    if (metricas.roi < 0) prefixo = "📊";
+    else if (metricas.roi > 50) prefixo = "🚀";
+    else if (metricas.roi > 20) prefixo = "⭐";
+
+    return `<div class="sim-comentario">${prefixo} ${comentario}</div>`;
+}
+
+function renderizarCards(metricas) {
+    const comentario = gerarComentarioAleatorio(metricas);
+    return `
+        ${comentario}
+        <div class="sim-cards">
+            <div class="sim-card">
+                <div class="sim-card-label">Investimento Total</div>
+                <div class="sim-card-value">${formatarMoeda(metricas.investimentoTotal)}</div>
+            </div>
+            <div class="sim-card">
+                <div class="sim-card-label">Valor Atual</div>
+                <div class="sim-card-value">${formatarMoeda(metricas.valorAtual)}</div>
+                <div class="sim-card-detail">${Math.round(metricas.totalAcoes)} acoes a ${formatarMoeda(metricas.precoMedio)}</div>
+            </div>
+            <div class="sim-card">
+                <div class="sim-card-label">Dividendos Acumulados</div>
+                <div class="sim-card-value">${formatarMoeda(metricas.dividendosTotal)}</div>
+            </div>
+            <div class="sim-card">
+                <div class="sim-card-label">ROI %</div>
+                <div class="sim-card-value">${formatarPercentual(metricas.roi)}</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderizarTabela(resultados) {
+    let html = `
+        <div class="sim-table-container">
+            <table class="sim-table">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Saldo Inicial</th>
+                        <th>Aportes</th>
+                        <th>Ganhos Preco</th>
+                        <th>Dividendos</th>
+                        <th>Saldo Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    resultados.forEach(linha => {
+        html += `
+            <tr>
+                <td>${linha.ano}</td>
+                <td>${formatarMoeda(linha.saldoInicial)}</td>
+                <td>${formatarMoeda(linha.aportes)}</td>
+                <td>${formatarMoeda(linha.ganhospreco)}</td>
+                <td>${formatarMoeda(linha.dividendos)}</td>
+                <td>${formatarMoeda(linha.saldoFinal)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    return html;
+}
+
+document.getElementById('simForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const meses = parseInt(document.getElementById('meses').value);
+    const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
+    const errorDiv = document.getElementById('formError');
+
+    errorDiv.style.display = 'none';
+
+    let erro = null;
+    if (isNaN(meses) || meses < 1 || meses > 600) {
+        erro = 'Meses deve estar entre 1 e 600';
+    } else if (isNaN(acoesPerMes) || acoesPerMes < 0) {
+        erro = 'Quantidade de acoes invalida';
+    }
+
+    if (erro) {
+        errorDiv.textContent = 'Erro: ' + erro;
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const resultados = simularCarteira(meses, acoesPerMes);
+    const metricas = calcularMetricas(resultados);
+
+    let conteudo = renderizarCards(metricas);
+    conteudo += renderizarTabela(resultados);
+
+    document.getElementById('tabContent').innerHTML = conteudo;
+    document.getElementById('simResults').style.display = 'block';
+});
+</script>

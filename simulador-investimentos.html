@@ -623,6 +623,16 @@
                     return sum + ((empresa.dividendoAnual / 12) * quantidadeAcoes[empresa.id]);
                 }, 0);
 
+                // REINVESTIMENTO: usar dividendos para comprar mais ações
+                // Dividendos são reinvestidos proporcionalmente nas 12 empresas
+                const precoMedioPorAcao = empresas.reduce((sum, e) => sum + precoMes[e.id], 0) / 12;
+                const acoesCompradasComDividendos = dividendosMes / precoMedioPorAcao;
+                const acoesPerEmpresa = acoesCompradasComDividendos / 12;
+
+                empresas.forEach(e => {
+                    quantidadeAcoes[e.id] += acoesPerEmpresa;
+                });
+
                 // Calculate portfolio value at end of month
                 const valorCarteiraFinal = empresas.reduce((sum, empresa) => {
                     return sum + (quantidadeAcoes[empresa.id] * precoMes[empresa.id]);
