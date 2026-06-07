@@ -220,6 +220,13 @@
             word-break: break-word;
         }
 
+        .sim-card-detail {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
         /* Chart Container */
         .sim-chart-container {
             background-color: var(--bg-tertiary);
@@ -633,23 +640,49 @@
         function calcularMetricas(resultados, empresaId = null) {
             if (resultados.length === 0) return null;
 
-            const ultimoAno = resultados[resultados.length - 1];
-            const dividendosTotal = resultados.reduce((sum, ano) => sum + ano.dividendos, 0);
-            const ganhosPrecoTotal = resultados.reduce((sum, ano) => sum + ano.ganhospreco, 0);
-            const aportesTotal = resultados.reduce((sum, ano) => sum + ano.aportes, 0);
+            const ultimoMes = resultados[resultados.length - 1];
+            const dividendosTotal = resultados.reduce((sum, mes) => sum + mes.dividendos, 0);
+            const ganhosPrecoTotal = resultados.reduce((sum, mes) => sum + mes.ganhospreco, 0);
+            const aportesTotal = resultados.reduce((sum, mes) => sum + mes.aportes, 0);
 
             const investimentoTotal = empresaId
                 ? empresas.find(e => e.id === empresaId).precoCom + aportesTotal
                 : investimentoInicial + aportesTotal;
 
-            const valorAtual = ultimoAno.saldoFinal;
+            const valorAtual = ultimoMes.saldoFinal;
             const roi = ((valorAtual - investimentoTotal) / investimentoTotal) * 100;
+
+            // Calculate number of stocks held and average price
+            const meses = resultados.length;
+            const crescMensal = Math.pow(1.08, 1/12) - 1;
+
+            let totalAcoes = 0;
+            let precoMedio = 0;
+
+            if (empresaId) {
+                const empresa = empresas.find(e => e.id === empresaId);
+                const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
+                totalAcoes = empresa.quantidade + (acoesPerMes * meses);
+                const precoAtual = empresa.precoCom * Math.pow(1 + crescMensal, meses);
+                precoMedio = precoAtual;
+            } else {
+                const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
+                empresas.forEach(e => {
+                    const qtd = e.quantidade + (acoesPerMes * meses);
+                    totalAcoes += qtd;
+                    const precoAtual = e.precoCom * Math.pow(1 + crescMensal, meses);
+                    precoMedio += precoAtual * qtd;
+                });
+                precoMedio = precoMedio / totalAcoes;
+            }
 
             return {
                 investimentoTotal,
                 valorAtual,
                 dividendosTotal,
-                roi
+                roi,
+                totalAcoes,
+                precoMedio
             };
         }
 
@@ -697,6 +730,7 @@
                     <div class="sim-card">
                         <div class="sim-card-label">Valor Atual</div>
                         <div class="sim-card-value">${formatarMoeda(metricas.valorAtual)}</div>
+                        <div class="sim-card-detail">${Math.round(metricas.totalAcoes)} acoes a ${formatarMoeda(metricas.precoMedio)}</div>
                     </div>
                     <div class="sim-card">
                         <div class="sim-card-label">Dividendos Acumulados</div>
