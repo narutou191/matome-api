@@ -248,6 +248,32 @@
             letter-spacing: 0.5px;
         }
 
+        /* Random Comment */
+        .sim-comentario {
+            background: linear-gradient(135deg, rgba(45, 212, 164, 0.15), rgba(212, 175, 55, 0.1));
+            border: 1px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            font-size: 15px;
+            color: #2dd4a4;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Chart Container */
         .sim-chart-container {
             background-color: var(--bg-tertiary);
@@ -748,9 +774,48 @@
             renderizarConteudoAba(tabId);
         }
 
+        // Random comments about results
+        function gerarComentarioAleatorio(metricas) {
+            const comentarios = [
+                "Paciência é a chave do sucesso no mercado!",
+                "Quanto mais você investe, mais composto trabalha para você!",
+                "Diversificação com ações japonesas é sabedoria financeira.",
+                "Dividendos são a recompensa da paciência do investidor.",
+                "Cada mês de compra é um passo em direção à liberdade financeira!",
+                "O poder do juros compostos está a seu favor!",
+                "Ações de qualidade sempre compensam no longo prazo.",
+                "Você está investindo no futuro - continue firme!",
+                "Mercado sobe e desce, mas o investidor consistente sempre vence.",
+                "Construir riqueza leva tempo, mas você já começou!",
+                "Dividendos são o melhor amigo do investidor paciente.",
+                "Cada ação comprada é uma pequena vitória.",
+                "O mercado recompensa quem espera com foco.",
+                "Você está no caminho certo - mantenha a consistência!",
+                "Ações japonesas: qualidade, tecnologia e confiabilidade.",
+                "Investir todo mês é a melhor forma de começar do zero.",
+                "ROI positivo significa que sua estratégia está funcionando!",
+                "O segredo é começar, não é esperar o momento perfeito.",
+                "Sua carteira está crescendo enquanto você dorme!",
+                "Disciplina financeira leva à independência econômica."
+            ];
+
+            // Selecionar comentário aleatório
+            const comentario = comentarios[Math.floor(Math.random() * comentarios.length)];
+
+            // Ajustar comentário baseado em ROI
+            let prefixo = "📈";
+            if (metricas.roi < 0) prefixo = "📊";
+            else if (metricas.roi > 50) prefixo = "🚀";
+            else if (metricas.roi > 20) prefixo = "⭐";
+
+            return `<div class="sim-comentario">${prefixo} ${comentario}</div>`;
+        }
+
         // Render cards
         function renderizarCards(metricas) {
+            const comentario = gerarComentarioAleatorio(metricas);
             const cardsHtml = `
+                ${comentario}
                 <div class="sim-cards">
                     <div class="sim-card">
                         <div class="sim-card-label">Investimento Total</div>
