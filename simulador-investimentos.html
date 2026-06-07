@@ -353,8 +353,8 @@
                     <input type="number" id="anos" name="anos" min="1" max="50" value="5" required>
                 </div>
                 <div class="sim-form-group">
-                    <label for="aporteMensal">Aporte mensal (¥)</label>
-                    <input type="number" id="aporteMensal" name="aporteMensal" min="0" value="0">
+                    <label for="acoesPerMes">Ações por mês (cada empresa)</label>
+                    <input type="number" id="acoesPerMes" name="acoesPerMes" min="0" value="1" step="0.5">
                 </div>
                 <button type="submit" class="sim-btn sim-btn-primary">Calcular</button>
             </form>
@@ -514,74 +514,111 @@
             return ano.toString();
         }
 
-        // Simulation function for entire portfolio
-        function simularCarteira(anos, aporteMensalInput) {
-            const aporteMensal = aporteMensalInput || 0;
-            const aporteAnual = aporteMensal * 12;
+        // Simulation function for entire portfolio (with stock purchases per month)
+        function simularCarteira(anos, acoesPerMesInput) {
+            const acoesPerMes = acoesPerMesInput || 0;
             const cresc_anual = 0.08;
 
             let resultados = [];
-            let saldoAnterior = investimentoInicial;
+            let quantidadeAcoes = {};
+            let saldoAnterior = 0;
+
+            // Initialize quantities (1 share of each at start)
+            empresas.forEach(e => {
+                quantidadeAcoes[e.id] = e.quantidade;
+                saldoAnterior += e.precoCom * e.quantidade;
+            });
 
             for (let ano = 1; ano <= anos; ano++) {
                 const anoAtual = 2026 + ano - 1;
 
-                const ganhosPrecoBruto = empresas.reduce((sum, empresa) => {
-                    const precoAnoAnterior = empresa.precoCom * Math.pow(1 + cresc_anual, ano - 1);
-                    const precoAnoAtual = empresa.precoCom * Math.pow(1 + cresc_anual, ano);
-                    const ganho = (precoAnoAtual - precoAnoAnterior) * empresa.quantidade;
-                    return sum + ganho;
-                }, 0);
+                // Calculate price at end of year
+                const precoAnual = {};
+                empresas.forEach(e => {
+                    precoAnual[e.id] = e.precoCom * Math.pow(1 + cresc_anual, ano);
+                });
 
+                // Calculate value gained from price appreciation during the year
+                let ganhosPrecoBruto = 0;
+                empresas.forEach(e => {
+                    const precoAnoAnterior = e.precoCom * Math.pow(1 + cresc_anual, ano - 1);
+                    const precoAnoAtual = precoAnual[e.id];
+                    const ganho = (precoAnoAtual - precoAnoAnterior) * quantidadeAcoes[e.id];
+                    ganhosPrecoBruto += ganho;
+                });
+
+                // Calculate cost of new shares purchased during the year
+                // Average price during year: (price at start + price at end) / 2
+                let custoNovasAcoes = 0;
+                empresas.forEach(e => {
+                    const precoMedio = (e.precoCom * Math.pow(1 + cresc_anual, ano - 1) + precoAnual[e.id]) / 2;
+                    const novasAcoes = acoesPerMes * 12 * e.quantidade; // multiply by quantity of company
+                    custoNovasAcoes += precoMedio * novasAcoes;
+                    quantidadeAcoes[e.id] += novasAcoes;
+                });
+
+                // Calculate dividends
                 const dividendosAno = empresas.reduce((sum, empresa) => {
-                    return sum + (empresa.dividendoAnual * empresa.quantidade);
+                    return sum + (empresa.dividendoAnual * quantidadeAcoes[empresa.id]);
                 }, 0);
 
-                const saldoFinal = saldoAnterior + aporteAnual + ganhosPrecoBruto + dividendosAno;
+                // Calculate portfolio value at end of year
+                const valorCarteiraFinal = empresas.reduce((sum, empresa) => {
+                    return sum + (quantidadeAcoes[empresa.id] * precoAnual[empresa.id]);
+                }, 0);
 
                 resultados.push({
                     ano: anoAtual,
                     saldoInicial: saldoAnterior,
-                    aportes: aporteAnual,
+                    aportes: custoNovasAcoes,
                     ganhospreco: ganhosPrecoBruto,
                     dividendos: dividendosAno,
-                    saldoFinal: saldoFinal
+                    saldoFinal: valorCarteiraFinal
                 });
 
-                saldoAnterior = saldoFinal;
+                saldoAnterior = valorCarteiraFinal;
             }
 
             return resultados;
         }
 
         // Simulation function for specific company
-        function simularEmpresa(empresaId, anos, aporteMensalInput) {
+        function simularEmpresa(empresaId, anos, acoesPerMesInput) {
             const empresa = empresas.find(e => e.id === empresaId);
             if (!empresa) return [];
 
-            const aporteMensal = aporteMensalInput || 0;
-            const aporteAnual = aporteMensal * 12;
+            const acoesPerMes = acoesPerMesInput || 0;
             const cresc_anual = 0.08;
 
             let resultados = [];
-            const investInicial = empresa.precoCom * empresa.quantidade;
-            let saldoAnterior = investInicial;
+            let quantidadeAcoes = empresa.quantidade;
+            let saldoAnterior = empresa.precoCom * empresa.quantidade;
 
             for (let ano = 1; ano <= anos; ano++) {
                 const anoAtual = 2026 + ano - 1;
 
+                // Price at start and end of year
                 const precoAnoAnterior = empresa.precoCom * Math.pow(1 + cresc_anual, ano - 1);
                 const precoAnoAtual = empresa.precoCom * Math.pow(1 + cresc_anual, ano);
-                const ganhospreco = (precoAnoAtual - precoAnoAnterior) * empresa.quantidade;
 
-                const dividendos = empresa.dividendoAnual * empresa.quantidade;
+                // Gains from price appreciation
+                const ganhospreco = (precoAnoAtual - precoAnoAnterior) * quantidadeAcoes;
 
-                const saldoFinal = saldoAnterior + aporteAnual + ganhospreco + dividendos;
+                // Cost of new shares (average price during year)
+                const precoMedio = (precoAnoAnterior + precoAnoAtual) / 2;
+                const custoNovasAcoes = precoMedio * (acoesPerMes * 12);
+                quantidadeAcoes += acoesPerMes * 12;
+
+                // Dividends
+                const dividendos = empresa.dividendoAnual * quantidadeAcoes;
+
+                // Portfolio value at end of year
+                const saldoFinal = quantidadeAcoes * precoAnoAtual;
 
                 resultados.push({
                     ano: anoAtual,
                     saldoInicial: saldoAnterior,
-                    aportes: aporteAnual,
+                    aportes: custoNovasAcoes,
                     ganhospreco: ganhospreco,
                     dividendos: dividendos,
                     saldoFinal: saldoFinal
@@ -778,14 +815,14 @@
 
             if (tabId === 'carteira-total') {
                 const anos = parseInt(document.getElementById('anos').value);
-                const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
-                resultados = simularCarteira(anos, aporteMensal);
+                const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
+                resultados = simularCarteira(anos, acoesPerMes);
                 metricas = calcularMetricas(resultados);
             } else {
                 empresaId = parseInt(tabId.replace('empresa-', ''));
                 const anos = parseInt(document.getElementById('anos').value);
-                const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
-                resultados = simularEmpresa(empresaId, anos, aporteMensal);
+                const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
+                resultados = simularEmpresa(empresaId, anos, acoesPerMes);
                 metricas = calcularMetricas(resultados, empresaId);
             }
 
@@ -803,7 +840,7 @@
             e.preventDefault();
 
             const anos = parseInt(document.getElementById('anos').value);
-            const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+            const acoesPerMes = parseFloat(document.getElementById('acoesPerMes').value) || 0;
             const errorDiv = document.getElementById('formError');
 
             errorDiv.style.display = 'none';
@@ -813,12 +850,12 @@
 
             if (isNaN(anos) || anos < 1 || anos > 50) {
                 erro = 'Anos deve estar entre 1 e 50';
-            } else if (isNaN(aporteMensal) || aporteMensal < 0) {
-                erro = 'Aporte inválido';
+            } else if (isNaN(acoesPerMes) || acoesPerMes < 0) {
+                erro = 'Quantidade de acoes invalida';
             }
 
             if (erro) {
-                errorDiv.textContent = '❌ ' + erro;
+                errorDiv.textContent = 'Erro: ' + erro;
                 errorDiv.style.display = 'block';
                 return;
             }
