@@ -78,11 +78,14 @@ async def gerar_pdf(req: ConsultaRequest):
         endereco = await resolver_cep(cep)
 
         # Step 2: Generate unique filenames
+        import os
         unique_id = str(uuid.uuid4())[:8]
         nome_mapa = f"{unique_id}.pdf"
         nome_comp = f"comp_{unique_id}.pdf"
-        caminho_mapa = f"pdfs/{nome_mapa}"
-        caminho_comp = f"pdfs/{nome_comp}"
+        pdfs_dir = os.path.join(os.getcwd(), "pdfs")
+        os.makedirs(pdfs_dir, exist_ok=True)
+        caminho_mapa = os.path.join(pdfs_dir, nome_mapa)
+        caminho_comp = os.path.join(pdfs_dir, nome_comp)
 
         # Step 3: Generate hazard map PDF
         await gerar_pdf_hazardmap(
