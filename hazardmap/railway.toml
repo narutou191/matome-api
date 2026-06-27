@@ -4,8 +4,9 @@ builder = "dockerfile"
 [deploy]
 startCommand = "uvicorn main:app --host 0.0.0.0 --port 8000"
 healthcheckPath = "/"
-healthcheckTimeout = 120
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
+healthcheckInterval = 10
 
 [[services]]
 name = "hazardmap-api"

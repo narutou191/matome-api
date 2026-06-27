@@ -41,8 +41,8 @@ class ConsultaRequest(BaseModel):
 
 @app.get("/")
 def health():
-    """Health check endpoint"""
-    return {"status": "ok", "service": "ハザードマップ API"}
+    """Health check endpoint - minimal response"""
+    return {"ok": True}
 
 
 @app.post("/gerar-pdf")
