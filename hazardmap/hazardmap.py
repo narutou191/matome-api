@@ -29,6 +29,9 @@ async def gerar_pdf_hazardmap(
     """
     Generate hazard map PDF by capturing from GSI portal via Playwright.
 
+    MVP Version: Creates a placeholder PDF with map link.
+    Full version with Playwright will be deployed after initial validation.
+
     Args:
         lat: Latitude
         lon: Longitude
@@ -37,12 +40,18 @@ async def gerar_pdf_hazardmap(
         zoom: Map zoom level (default 15)
 
     Raises:
-        Exception: If browser fails or PDF generation fails
+        Exception: If PDF generation fails
     """
+    # MVP: Generate PDF with map link instead of screenshot
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+
     layers = TIPO_LAYERS.get(tipo, TIPO_LAYERS["1"])
     disp = TIPO_DISP.get(tipo, TIPO_DISP["1"])
 
-    # Build URL with coordinates and layer configuration
     url = (
         f"https://disaportal.gsi.go.jp/hazardmap/maps/index.html"
         f"?ll={lat},{lon}"
@@ -53,52 +62,37 @@ async def gerar_pdf_hazardmap(
         f"&vs=c1j0l0u0t0h0z0"
     )
 
-    async with async_playwright() as p:
-        # Launch browser
-        browser = await p.chromium.launch(
-            args=["--no-sandbox", "--disable-setuid-sandbox"]
-        )
+    doc = SimpleDocTemplate(
+        output_path,
+        pagesize=A4,
+        rightMargin=20*mm,
+        leftMargin=20*mm,
+        topMargin=20*mm,
+        bottomMargin=20*mm,
+    )
 
-        try:
-            # Create context with Japanese locale
-            context = await browser.new_context(
-                viewport={"width": 1280, "height": 900},
-                locale="ja-JP"
-            )
+    styles = getSampleStyleSheet()
+    story = []
 
-            page = await context.new_page()
+    story.append(Paragraph(
+        "<b>ハザードマップ — 地図リンク</b>",
+        styles["Title"]
+    ))
+    story.append(Spacer(1, 10*mm))
 
-            # Navigate to portal
-            await page.goto(url, wait_until="networkidle")
+    story.append(Paragraph(
+        f"<b>座標:</b> {lat}, {lon}",
+        styles["Normal"]
+    ))
+    story.append(Paragraph(
+        f"<b>ズーム:</b> {zoom}",
+        styles["Normal"]
+    ))
+    story.append(Spacer(1, 10*mm))
 
-            # Wait for map to fully render
-            await asyncio.sleep(5)
+    story.append(Paragraph(
+        f"<a href='{url}'><b>地図を開く</b></a>",
+        styles["Normal"]
+    ))
 
-            # Try to close any popups
-            try:
-                close_buttons = await page.query_selector_all(
-                    "button.close, .modal-close, [aria-label='Close']"
-                )
-                if close_buttons:
-                    await close_buttons[0].click()
-                    await asyncio.sleep(1)
-            except Exception:
-                pass  # Popups may not exist, that's fine
-
-            # Generate PDF
-            await page.pdf(
-                path=output_path,
-                format="A4",
-                print_background=True,
-                margin={
-                    "top": "10mm",
-                    "bottom": "10mm",
-                    "left": "10mm",
-                    "right": "10mm",
-                },
-            )
-
-            await context.close()
-
-        finally:
-            await browser.close()
+    doc.build(story)
