@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador ao Vivo do Autônomo</title>
+<style>
+  :root {
+    --azul: #1b3a5c;
+    --azul-escuro: #0f2438;
+    --azul-claro: #e8eef5;
+    --dourado: #b8862c;
+    --dourado-claro: #d9a94a;
+    --branco: #ffffff;
+    --creme: #f7f4ee;
+    --texto: #16232e;
+    --verde: #2f7d5f;
+    --vermelho-suave: #b3413a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--creme);
+    font-family: system-ui, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    color: var(--texto);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 12px;
+  }
+  #app {
+    width: 100%;
+    max-width: 420px;
+    background: var(--branco);
+    border: 2px solid var(--azul-claro);
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 10px 30px rgba(15,36,56,0.12);
+    text-align: center;
+  }
+  #app.view-telao {
+    max-width: 720px;
+    padding: 48px 40px;
+  }
+  #app.view-telao .fichas-valor { font-size: 64px; }
+  #app.view-telao h1 { font-size: 38px; }
+  #app.view-telao button.acao { font-size: 22px; padding: 16px 28px; }
+  #app.view-telao .numero-impacto { font-size: 56px; }
+  .controles-fixos {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+  .controles-fixos button {
+    background: var(--branco);
+    border: 2px solid var(--azul-claro);
+    color: var(--azul);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  h1 { color: var(--azul-escuro); font-size: 24px; margin: 0 0 8px; }
+  p { line-height: 1.5; }
+  .fichas-contador {
+    background: var(--azul-claro);
+    border-radius: 999px;
+    display: inline-block;
+    padding: 6px 18px;
+    margin-bottom: 16px;
+    font-weight: bold;
+  }
+  .fichas-valor { font-size: 26px; color: var(--azul-escuro); }
+  .acao {
+    background: var(--azul);
+    color: var(--branco);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 22px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .acao:active { transform: scale(0.97); }
+  .secundario {
+    background: transparent;
+    border: 2px solid var(--azul);
+    color: var(--azul);
+  }
+  input.campo-nome {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid var(--azul-claro);
+    background: var(--creme);
+    color: var(--texto);
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .qr-placeholder {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+    background: var(--azul-claro);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--azul-escuro);
+    font-size: 12px;
+    padding: 8px;
+    text-align: center;
+  }
+  .tiers { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .tier {
+    background: var(--branco);
+    border: 2px solid var(--azul-claro);
+    color: var(--azul);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .tier.selecionado { background: var(--azul); color: var(--branco); border-color: var(--azul); }
+  .barra-progresso { width: 100%; height: 14px; background: var(--azul-claro); border-radius: 999px; overflow: hidden; margin: 16px 0; }
+  .barra-preenchimento { width: 100%; height: 100%; background: var(--azul); border-radius: 999px; transition: width 1.2s ease; }
+  .barra-preenchimento.preenchendo { width: 75%; }
+  .cenarios { display: flex; gap: 12px; margin: 16px 0; }
+  .cenario {
+    flex: 1;
+    background: var(--creme);
+    border: 2px solid var(--azul-claro);
+    border-radius: 12px;
+    color: var(--texto);
+    padding: 14px 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .cenario.destaque { border-color: var(--dourado); background: #fbf3e2; }
+  .cenario:active { transform: scale(0.97); }
+  .comparacao-lado-a-lado { display: flex; gap: 12px; margin: 16px 0; }
+  .coluna {
+    flex: 1;
+    background: var(--creme);
+    border-radius: 12px;
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .coluna.destaque { background: #fbf3e2; border: 2px solid var(--dourado); }
+  .rotulo { font-size: 13px; color: var(--azul); font-weight: bold; }
+  .valor-grande { font-size: 22px; font-weight: bold; color: var(--azul-escuro); }
+  .numero-impacto { font-size: 34px; font-weight: bold; color: var(--dourado); margin: 16px 0 4px; }
+  .numero-impacto-legenda { font-size: 14px; color: var(--texto); font-weight: normal; }
+  .ranking { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .ranking th, .ranking td { padding: 8px; border-bottom: 1px solid var(--azul-claro); text-align: left; }
+  .linha-jogador { background: var(--azul-claro); font-weight: bold; }
+  .botao-link { display: inline-block; text-decoration: none; }
+  /* ANCHOR: styles-end */
+</style>
+</head>
+<body>
+  <div class="controles-fixos">
+    <button id="btn-toggle-view" type="button">Ver Telão</button>
+    <button id="btn-mudo" type="button">🔊</button>
+  </div>
+  <div id="app"></div>
+
+<script>
+// ---------- LÓGICA PURA (sem DOM, testável via Node) ----------
+function arredondarMil(valor) {
+  return Math.round(valor / 1000) * 1000;
+}
+
+function simular(lucro) {
+  const impostoObrigatorio = arredondarMil(lucro * 0.25);
+  const saldoAposImposto = lucro - impostoObrigatorio;
+  const cenarioA = arredondarMil(saldoAposImposto * 0.80);
+  const cenarioB = arredondarMil(saldoAposImposto * 1.25);
+  const diferencaMensal = cenarioB - cenarioA;
+  const diferencaAnual = diferencaMensal * 12;
+  return {
+    lucro: lucro,
+    impostoObrigatorio: impostoObrigatorio,
+    saldoAposImposto: saldoAposImposto,
+    cenarioA: cenarioA,
+    cenarioB: cenarioB,
+    diferencaMensal: diferencaMensal,
+    diferencaAnual: diferencaAnual,
+  };
+}
+
+function formatarYen(valor) {
+  return '¥' + valor.toLocaleString('pt-BR');
+}
+
+function montarComparacao(saldoAposImposto, nomeJogador, saldoJogador) {
+  const bots = [
+    { nome: 'Tanaka_Kojin', saldo: arredondarMil(saldoAposImposto * 1.25) },
+    { nome: 'Silva_Autonomo', saldo: arredondarMil(saldoAposImposto * 1.20) },
+    { nome: 'Kenji_Design', saldo: arredondarMil(saldoAposImposto * 0.80) },
+  ];
+  const todos = bots.concat([{ nome: nomeJogador || 'Você', saldo: saldoJogador, jogador: true }]);
+  return todos.slice().sort(function (a, b) { return b.saldo - a.saldo; });
+}
+
+// ---------- SOM E VIBRAÇÃO ----------
+let audioCtx = null;
+function obterAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tocarSom(tipo) {
+  if (state.muted) return;
+  if (typeof window === 'undefined') return;
+  const ctx = obterAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  const agora = ctx.currentTime;
+  if (tipo === 'perda') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, agora);
+    osc.frequency.exponentialRampToValueAtTime(140, agora + 0.5);
+    gain.gain.setValueAtTime(0.12, agora);
+    gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.5);
+    osc.start(agora);
+    osc.stop(agora + 0.5);
+  } else if (tipo === 'ganho') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, agora);
+    osc.frequency.exponentialRampToValueAtTime(700, agora + 0.3);
+    gain.gain.setValueAtTime(0.12, agora);
+    gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.3);
+    osc.start(agora);
+    osc.stop(agora + 0.3);
+  }
+}
+
+function vibrar(padrao) {
+  if (state.muted) return;
+  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(padrao);
+}
+
+// ---------- ANIMAÇÃO DE CONTAGEM (hodômetro) ----------
+function animarContador(elementId, de, ate, duracaoMs) {
+  if (typeof window === 'undefined') return;
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  const inicio = performance.now();
+  function passo(agora) {
+    const progresso = Math.min(1, (agora - inicio) / duracaoMs);
+    const valorAtual = Math.round(de + (ate - de) * progresso);
+    el.textContent = formatarYen(valorAtual);
+    if (progresso < 1) {
+      requestAnimationFrame(passo);
+    }
+  }
+  requestAnimationFrame(passo);
+}
+
+// ---------- ESTADO ----------
+const state = {
+  screen: 'entrada',
+  nome: '',
+  lucro: 300000,
+  sim: null,
+  descontoAplicado: false,
+  escolha: null,
+  view: 'celular',
+  muted: false,
+};
+
+// ---------- RENDER ----------
+function render() {
+  const app = document.getElementById('app');
+  app.className = 'view-' + state.view;
+  let html = '';
+  if (state.screen === 'entrada') html = renderEntrada();
+  else if (state.screen === 'desconto') html = renderDesconto();
+  else if (state.screen === 'cenarios') html = renderCenarios();
+  else if (state.screen === 'comparacao') html = renderComparacao();
+  else if (state.screen === 'social') html = renderSocial();
+  else if (state.screen === 'cta') html = renderCTA();
+  app.innerHTML = html;
+  attachHandlers();
+}
+
+function renderEntrada() {
+  const tiers = [200000, 300000, 500000, 800000];
+  const botoesTier = tiers.map(function (t) {
+    const selecionado = t === state.lucro ? ' selecionado' : '';
+    return '<button class="tier' + selecionado + '" data-lucro="' + t + '" type="button">' + formatarYen(t) + '</button>';
+  }).join('');
+  return '' +
+    '<div class="qr-placeholder">[QR CODE]<br>escaneie para entrar</div>' +
+    '<h1>Simulador ao Vivo do Autônomo</h1>' +
+    '<p>Escaneie o QR Code, escolha sua faixa de lucro mensal e digite seu nome.</p>' +
+    '<div class="tiers">' + botoesTier + '</div>' +
+    '<input class="campo-nome" id="input-nome" type="text" placeholder="Seu nome" maxlength="20">' +
+    '<button class="acao" id="btn-entrar" type="button">Simular meu lucro</button>';
+}
+
+function renderDesconto() {
+  const contadorInicial = state.descontoAplicado ? state.sim.saldoAposImposto : state.lucro;
+  const contador = '<div class="fichas-contador">Saldo: <span class="fichas-valor" id="contador-lucro">' + formatarYen(contadorInicial) + '</span></div>';
+  if (!state.descontoAplicado) {
+    return contador +
+      '<h1>Desconto Obrigatório</h1>' +
+      '<p>Todo lucro de autônomo passa por aqui: Imposto de Renda (Shotoku-zei) e Residencial (Jumin-zei).</p>' +
+      '<div class="barra-progresso"><div class="barra-preenchimento" id="barra-preenchimento"></div></div>' +
+      '<button class="acao" id="btn-calcular-desconto" type="button">Calcular meu desconto obrigatório</button>';
+  }
+  return contador +
+    '<h1>Lá se foi parte do lucro</h1>' +
+    '<p>Você perdeu <strong>' + formatarYen(state.sim.impostoObrigatorio) + '</strong> direto para a prefeitura.</p>' +
+    '<button class="acao" id="btn-continuar-desconto" type="button">Continuar</button>';
+}
+
+function renderCenarios() {
+  if (state.escolha === null) {
+    const contador = '<div class="fichas-contador">Saldo: <span class="fichas-valor" id="contador-lucro">' + formatarYen(state.sim.saldoAposImposto) + '</span></div>';
+    return contador +
+      '<h1>Dois Caminhos Possíveis</h1>' +
+      '<p>Como você vai lidar com o resto do seu lucro este ano?</p>' +
+      '<div class="cenarios">' +
+        '<button class="cenario" id="btn-tradicional" type="button"><strong>Sem planejamento tributário</strong><br>Declaração tradicional</button>' +
+        '<button class="cenario destaque" id="btn-ideco" type="button"><strong>Com iDeCo ativado</strong><br>Abatimento fiscal (Categoria 1)</button>' +
+      '</div>';
+  }
+  const resultado = state.escolha === 'tradicional' ? state.sim.cenarioA : state.sim.cenarioB;
+  const titulo = state.escolha === 'tradicional' ? 'Sem abatimento' : 'Escudo Ativado';
+  const texto = state.escolha === 'tradicional'
+    ? 'Você continuou sem planejamento tributário. Mais uma parte do lucro virou imposto.'
+    : 'Você ativou o iDeCo e recuperou parte do seu lucro de volta.';
+  return '<div class="fichas-contador">Saldo: <span class="fichas-valor" id="contador-lucro">' + formatarYen(resultado) + '</span></div>' +
+    '<h1>' + titulo + '</h1>' +
+    '<p>' + texto + '</p>' +
+    '<button class="acao" id="btn-continuar-cenarios" type="button">Ver Resultado Comparativo</button>';
+}
+
+function escolherCenario(tipo) {
+  const resultado = tipo === 'tradicional' ? state.sim.cenarioA : state.sim.cenarioB;
+  tocarSom(tipo === 'tradicional' ? 'perda' : 'ganho');
+  animarContador('contador-lucro', state.sim.saldoAposImposto, resultado, 1200);
+  setTimeout(function () {
+    state.escolha = tipo;
+    vibrar(tipo === 'tradicional' ? [80, 40, 80] : [40]);
+    render();
+  }, 1200);
+}
+
+function renderComparacao() {
+  return '<h1>O Impacto Real</h1>' +
+    '<div class="comparacao-lado-a-lado">' +
+      '<div class="coluna"><span class="rotulo">Sem planejamento</span><span class="valor-grande">' + formatarYen(state.sim.cenarioA) + '</span></div>' +
+      '<div class="coluna destaque"><span class="rotulo">Com iDeCo</span><span class="valor-grande">' + formatarYen(state.sim.cenarioB) + '</span></div>' +
+    '</div>' +
+    '<p>Diferença: <strong>' + formatarYen(state.sim.diferencaMensal) + '/mês</strong></p>' +
+    '<div class="numero-impacto">≈ ' + formatarYen(state.sim.diferencaAnual) + '<br><span class="numero-impacto-legenda">por ano</span></div>' +
+    '<button class="acao" id="btn-continuar-comparacao" type="button">Ver Comparação</button>';
+}
+
+function renderSocial() {
+  const saldoJogador = state.escolha === 'tradicional' ? state.sim.cenarioA : state.sim.cenarioB;
+  const comparacao = montarComparacao(state.sim.saldoAposImposto, state.nome, saldoJogador);
+  const linhas = comparacao.map(function (p, i) {
+    const destaque = p.jogador ? ' class="linha-jogador"' : '';
+    return '<tr' + destaque + '><td>' + (i + 1) + 'º</td><td>' + (p.nome || 'Você') + '</td><td>' + formatarYen(p.saldo) + '</td></tr>';
+  }).join('');
+  return '<h1>Como Você Se Compara</h1>' +
+    '<table class="ranking"><thead><tr><th>#</th><th>Nome</th><th>Saldo</th></tr></thead><tbody>' + linhas + '</tbody></table>' +
+    '<button class="acao" id="btn-continuar-social" type="button">Continuar</button>';
+}
+
+function renderCTA() {
+  return '<h1>Do simulador pro seu bolso de verdade</h1>' +
+    '<p>No simulador aqui, com um lucro de ' + formatarYen(state.lucro) + '/mês, a diferença entre planejar e não planejar foi de <strong>' + formatarYen(state.sim.diferencaAnual) + ' por ano</strong>.</p>' +
+    '<p>Isso é o iDeCo pra autônomos (Categoria 1): transformar o dinheiro que iria pro imposto em patrimônio no seu nome, com teto de ¥68.000/mês (¥816.000/ano).</p>' +
+    '<p>Agora vamos sair do exemplo simplificado e ver o seu valor REAL, com os detalhes da sua declaração.</p>' +
+    '<a class="acao botao-link" id="link-simulador" href="https://casapropriajp.com/ideco-2026" target="_blank" rel="noopener">Ver meu valor real →</a>' +
+    '<br>' +
+    '<button class="acao secundario" id="btn-simular-de-novo" type="button">Simular de novo</button>';
+}
+
+// ---------- HANDLERS ----------
+function attachHandlers() {
+  if (state.screen === 'entrada') {
+    const botoesTier = document.querySelectorAll('.tier');
+    for (let i = 0; i < botoesTier.length; i++) {
+      botoesTier[i].onclick = function (ev) {
+        state.lucro = parseInt(ev.currentTarget.getAttribute('data-lucro'), 10);
+        render();
+      };
+    }
+    document.getElementById('btn-entrar').onclick = function () {
+      const input = document.getElementById('input-nome');
+      state.nome = input.value.trim();
+      state.sim = simular(state.lucro);
+      state.descontoAplicado = false;
+      state.escolha = null;
+      state.screen = 'desconto';
+      render();
+    };
+  } else if (state.screen === 'desconto') {
+    if (!state.descontoAplicado) {
+      document.getElementById('btn-calcular-desconto').onclick = function () {
+        document.getElementById('barra-preenchimento').classList.add('preenchendo');
+        tocarSom('perda');
+        animarContador('contador-lucro', state.lucro, state.sim.saldoAposImposto, 1200);
+        setTimeout(function () {
+          state.descontoAplicado = true;
+          vibrar([80, 40, 80]);
+          render();
+        }, 1200);
+      };
+    } else {
+      document.getElementById('btn-continuar-desconto').onclick = function () {
+        state.screen = 'cenarios';
+        render();
+      };
+    }
+  } else if (state.screen === 'cenarios') {
+    if (state.escolha === null) {
+      document.getElementById('btn-tradicional').onclick = function () { escolherCenario('tradicional'); };
+      document.getElementById('btn-ideco').onclick = function () { escolherCenario('ideco'); };
+    } else {
+      document.getElementById('btn-continuar-cenarios').onclick = function () {
+        state.screen = 'comparacao';
+        render();
+      };
+    }
+  } else if (state.screen === 'comparacao') {
+    document.getElementById('btn-continuar-comparacao').onclick = function () {
+      state.screen = 'social';
+      render();
+    };
+  } else if (state.screen === 'social') {
+    document.getElementById('btn-continuar-social').onclick = function () {
+      state.screen = 'cta';
+      render();
+    };
+  } else if (state.screen === 'cta') {
+    document.getElementById('btn-simular-de-novo').onclick = function () {
+      state.screen = 'entrada';
+      state.lucro = 300000;
+      state.sim = null;
+      state.descontoAplicado = false;
+      state.escolha = null;
+      render();
+    };
+  }
+}
+
+// ---------- INICIALIZAÇÃO (protegida para poder ser importada no Node) ----------
+function init() {
+  document.getElementById('btn-toggle-view').onclick = function () {
+    state.view = state.view === 'celular' ? 'telao' : 'celular';
+    document.getElementById('btn-toggle-view').textContent = state.view === 'celular' ? 'Ver Telão' : 'Ver Celular';
+    render();
+  };
+  document.getElementById('btn-mudo').onclick = function () {
+    state.muted = !state.muted;
+    document.getElementById('btn-mudo').textContent = state.muted ? '🔇' : '🔊';
+  };
+  render();
+}
+
+if (typeof document !== 'undefined') {
+  init();
+}
+</script>
+</body>
+</html>
