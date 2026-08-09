@@ -1,7 +1,9 @@
 # Cassino do Leão Japonês — Protótipo HTML
 
 **Data:** 2026-08-09
-**Status:** Aprovado para implementação
+**Status:** SUBSTITUÍDO — o usuário decidiu abandonar a estética de cassino/aposta
+por algo mais sóbrio e realista. Ver
+`2026-08-09-simulador-ao-vivo-autonomo-design.md` para o design atual.
 
 ## Contexto
 
