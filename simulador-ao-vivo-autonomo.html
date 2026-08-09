@@ -110,6 +110,13 @@
   }
   .acao:hover { background: var(--azul-escuro); box-shadow: 0 8px 20px rgba(27,58,92,0.3); }
   .acao:active { transform: scale(0.97); box-shadow: 0 4px 10px rgba(27,58,92,0.25); }
+  .acao:disabled, .cenario:disabled {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+    transform: none;
+  }
+  h1:focus { outline: none; }
   .secundario {
     background: transparent;
     border: 2px solid var(--azul);
@@ -225,9 +232,9 @@
 <body>
   <div class="controles-fixos">
     <button id="btn-toggle-view" type="button">Ver Telão</button>
-    <button id="btn-mudo" type="button">🔊</button>
+    <button id="btn-mudo" type="button" aria-pressed="false" aria-label="Silenciar som">🔊</button>
   </div>
-  <div id="app"></div>
+  <div id="app" aria-live="polite"></div>
 
 <script>
 // ---------- LÓGICA PURA (sem DOM, testável via Node) ----------
@@ -336,6 +343,9 @@ function animarContador(elementId, de, ate, duracaoMs) {
   requestAnimationFrame(passo);
 }
 
+// ---------- CONFIG ----------
+const DURACAO_ANIMACAO_MS = 1200;
+
 // ---------- ESTADO ----------
 const state = {
   screen: 'entrada',
@@ -363,6 +373,11 @@ function render() {
   attachHandlers();
   void app.offsetWidth;
   app.classList.add('renderizando');
+  const titulo = app.querySelector('h1');
+  if (titulo) {
+    titulo.setAttribute('tabindex', '-1');
+    titulo.focus({ preventScroll: true });
+  }
 }
 
 function renderEntrada() {
@@ -420,13 +435,15 @@ function renderCenarios() {
 
 function escolherCenario(tipo) {
   const resultado = tipo === 'tradicional' ? state.sim.cenarioA : state.sim.cenarioB;
+  document.getElementById('btn-tradicional').disabled = true;
+  document.getElementById('btn-ideco').disabled = true;
   tocarSom(tipo === 'tradicional' ? 'perda' : 'ganho');
-  animarContador('contador-lucro', state.sim.saldoAposImposto, resultado, 1200);
+  animarContador('contador-lucro', state.sim.saldoAposImposto, resultado, DURACAO_ANIMACAO_MS);
   setTimeout(function () {
     state.escolha = tipo;
     vibrar(tipo === 'tradicional' ? [80, 40, 80] : [40]);
     render();
-  }, 1200);
+  }, DURACAO_ANIMACAO_MS);
 }
 
 function renderComparacao() {
@@ -472,7 +489,7 @@ function attachHandlers() {
         render();
       };
     }
-    document.getElementById('btn-entrar').onclick = function () {
+    const entrar = function () {
       const input = document.getElementById('input-nome');
       state.nome = input.value.trim();
       state.sim = simular(state.lucro);
@@ -481,17 +498,22 @@ function attachHandlers() {
       state.screen = 'desconto';
       render();
     };
+    document.getElementById('btn-entrar').onclick = entrar;
+    document.getElementById('input-nome').onkeydown = function (ev) {
+      if (ev.key === 'Enter') entrar();
+    };
   } else if (state.screen === 'desconto') {
     if (!state.descontoAplicado) {
-      document.getElementById('btn-calcular-desconto').onclick = function () {
+      document.getElementById('btn-calcular-desconto').onclick = function (ev) {
+        ev.currentTarget.disabled = true;
         document.getElementById('barra-preenchimento').classList.add('preenchendo');
         tocarSom('perda');
-        animarContador('contador-lucro', state.lucro, state.sim.saldoAposImposto, 1200);
+        animarContador('contador-lucro', state.lucro, state.sim.saldoAposImposto, DURACAO_ANIMACAO_MS);
         setTimeout(function () {
           state.descontoAplicado = true;
           vibrar([80, 40, 80]);
           render();
-        }, 1200);
+        }, DURACAO_ANIMACAO_MS);
       };
     } else {
       document.getElementById('btn-continuar-desconto').onclick = function () {
@@ -540,7 +562,10 @@ function init() {
   };
   document.getElementById('btn-mudo').onclick = function () {
     state.muted = !state.muted;
-    document.getElementById('btn-mudo').textContent = state.muted ? '🔇' : '🔊';
+    const botaoMudo = document.getElementById('btn-mudo');
+    botaoMudo.textContent = state.muted ? '🔇' : '🔊';
+    botaoMudo.setAttribute('aria-pressed', String(state.muted));
+    botaoMudo.setAttribute('aria-label', state.muted ? 'Ativar som' : 'Silenciar som');
   };
   render();
 }
