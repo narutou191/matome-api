@@ -61,24 +61,50 @@ seletor rápido (toque, sem digitar) de lucro mensal ilustrativo:
 - ¥500.000/mês
 - ¥800.000/mês
 
-Todos os números do resto do fluxo derivam desse valor através de uma função
-pura `simular(lucro)`, reaproveitável e testável sem navegador:
+**Os números não são mais uma fórmula percentual inventada** (a primeira
+versão usava -25%/+25% fixos, que gerava valores irrealistas — ex.:
+¥1,2 milhão/ano de diferença, quase 10x o valor real). Em vez disso, cada
+faixa usa uma tabela de valores calibrados consultando o próprio simulador
+real (`casapropriajp.com/ideco-2026`), Categoria 1, aporte máximo de
+¥68.000/mês, idade 42, retorno 3% a.a. — os mesmos parâmetros padrão da
+ferramenta oficial:
+
+| Lucro mensal | Imposto obrigatório/mês (sem iDeCo) | % efetiva real | Economia com iDeCo máximo/mês |
+|---|---|---|---|
+| ¥200.000 | ¥16.000 | 8,0% | ¥10.000 |
+| ¥300.000 | ¥31.000 | 10,3% | ¥11.000 |
+| ¥500.000 | ¥88.000 | 17,6% | ¥21.000 |
+| ¥800.000 | ¥184.000 | 23,0% | ¥23.000 |
 
 ```js
+const DADOS_POR_FAIXA = {
+  200000: { impostoObrigatorio: 16000, economiaIdeco: 10000 },
+  300000: { impostoObrigatorio: 31000, economiaIdeco: 11000 },
+  500000: { impostoObrigatorio: 88000, economiaIdeco: 21000 },
+  800000: { impostoObrigatorio: 184000, economiaIdeco: 23000 },
+};
+
 function simular(lucro) {
-  const impostoObrigatorio = Math.round(lucro * 0.25 / 1000) * 1000;
-  const saldoAposImposto = lucro - impostoObrigatorio;
-  const cenarioA = Math.round(saldoAposImposto * 0.80 / 1000) * 1000; // sem planejamento: -20%
-  const cenarioB = Math.round(saldoAposImposto * 1.25 / 1000) * 1000; // com iDeCo: +25%
-  const diferencaMensal = cenarioB - cenarioA;
+  const dados = DADOS_POR_FAIXA[lucro];
+  const saldoAposImposto = lucro - dados.impostoObrigatorio;
+  const cenarioA = saldoAposImposto; // sem planejamento: nada muda, o imposto continua
+  const cenarioB = saldoAposImposto + dados.economiaIdeco; // com iDeCo: recupera a economia
+  const diferencaMensal = dados.economiaIdeco;
   const diferencaAnual = diferencaMensal * 12;
-  return { lucro, impostoObrigatorio, saldoAposImposto, cenarioA, cenarioB, diferencaMensal, diferencaAnual };
+  return { lucro, impostoObrigatorio: dados.impostoObrigatorio, saldoAposImposto, cenarioA, cenarioB, diferencaMensal, diferencaAnual };
 }
 ```
 
-Exemplo com o valor padrão (¥300.000): imposto obrigatório ¥75.000 → saldo
-¥225.000 → cenário sem planejamento ¥180.000 vs. cenário com iDeCo ¥281.000 →
-diferença de ¥101.000/mês (≈ **¥1.212.000/ano**).
+Note que `cenarioA` (sem planejamento) é numericamente igual a
+`saldoAposImposto` — não há uma "segunda perda" inventada. A mensagem desse
+cenário é "nada muda, você continua pagando esse imposto todo mês", não uma
+perda adicional fictícia.
+
+Exemplo com o valor padrão (¥300.000): imposto obrigatório ¥31.000 → saldo
+¥269.000 → cenário sem planejamento ¥269.000 (inalterado) vs. cenário com
+iDeCo ¥280.000 → diferença de ¥11.000/mês (≈ **¥132.000/ano**), consistente
+com a economia anual real de ¥128.872 mostrada pelo simulador oficial para
+esse mesmo perfil.
 
 ## Fluxo de telas
 
@@ -103,9 +129,9 @@ diferença de ¥101.000/mês (≈ **¥1.212.000/ano**).
    "ranking de jogo") com o jogador ao lado de 3 participantes fictícios
    fixos, todos calculados a partir do mesmo `saldoAposImposto` do jogador
    para ficar comparável em qualquer faixa de renda escolhida:
-   - Tanaka_Kojin — ativou iDeCo (`saldoAposImposto × 1.25`, igual ao cenário B)
-   - Silva_Autonomo — ativou iDeCo com aporte menor (`saldoAposImposto × 1.20`)
-   - Kenji_Design — ainda não decidiu (`saldoAposImposto × 0.80`, igual ao cenário A)
+   - Tanaka_Kojin — ativou iDeCo com aporte máximo (`sim.cenarioB`)
+   - Silva_Autonomo — ativou iDeCo com aporte menor (`sim.saldoAposImposto + 60%` da economia)
+   - Kenji_Design — ainda não decidiu (`sim.cenarioA`, igual ao saldo sem planejamento)
    Ordenado do maior para o menor saldo.
 6. **Transição/CTA** — fala do palestrante adaptada para citar o valor anual
    real calculado (`diferencaAnual`) em vez de fichas fictícias, com botão

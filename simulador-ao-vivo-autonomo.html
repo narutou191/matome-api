@@ -179,16 +179,28 @@ function arredondarMil(valor) {
   return Math.round(valor / 1000) * 1000;
 }
 
+// Valores calibrados a partir do simulador real (casapropriajp.com/ideco-2026),
+// Categoria 1, aporte máximo de ¥68.000/mês, idade 42, retorno 3% a.a.
+// impostoObrigatorio = imposto de renda + residencial médio/mês sem iDeCo.
+// economiaIdeco = quanto desse imposto some por mês ao usar o aporte máximo.
+const DADOS_POR_FAIXA = {
+  200000: { impostoObrigatorio: 16000, economiaIdeco: 10000 },
+  300000: { impostoObrigatorio: 31000, economiaIdeco: 11000 },
+  500000: { impostoObrigatorio: 88000, economiaIdeco: 21000 },
+  800000: { impostoObrigatorio: 184000, economiaIdeco: 23000 },
+};
+
 function simular(lucro) {
-  const impostoObrigatorio = arredondarMil(lucro * 0.25);
-  const saldoAposImposto = lucro - impostoObrigatorio;
-  const cenarioA = arredondarMil(saldoAposImposto * 0.80);
-  const cenarioB = arredondarMil(saldoAposImposto * 1.25);
-  const diferencaMensal = cenarioB - cenarioA;
+  const dados = DADOS_POR_FAIXA[lucro];
+  if (!dados) throw new Error('faixa de renda não suportada: ' + lucro);
+  const saldoAposImposto = lucro - dados.impostoObrigatorio;
+  const cenarioA = saldoAposImposto;
+  const cenarioB = saldoAposImposto + dados.economiaIdeco;
+  const diferencaMensal = dados.economiaIdeco;
   const diferencaAnual = diferencaMensal * 12;
   return {
     lucro: lucro,
-    impostoObrigatorio: impostoObrigatorio,
+    impostoObrigatorio: dados.impostoObrigatorio,
     saldoAposImposto: saldoAposImposto,
     cenarioA: cenarioA,
     cenarioB: cenarioB,
@@ -201,11 +213,11 @@ function formatarYen(valor) {
   return '¥' + valor.toLocaleString('pt-BR');
 }
 
-function montarComparacao(saldoAposImposto, nomeJogador, saldoJogador) {
+function montarComparacao(sim, nomeJogador, saldoJogador) {
   const bots = [
-    { nome: 'Tanaka_Kojin', saldo: arredondarMil(saldoAposImposto * 1.25) },
-    { nome: 'Silva_Autonomo', saldo: arredondarMil(saldoAposImposto * 1.20) },
-    { nome: 'Kenji_Design', saldo: arredondarMil(saldoAposImposto * 0.80) },
+    { nome: 'Tanaka_Kojin', saldo: sim.cenarioB },
+    { nome: 'Silva_Autonomo', saldo: sim.saldoAposImposto + arredondarMil(sim.diferencaMensal * 0.6) },
+    { nome: 'Kenji_Design', saldo: sim.cenarioA },
   ];
   const todos = bots.concat([{ nome: nomeJogador || 'Você', saldo: saldoJogador, jogador: true }]);
   return todos.slice().sort(function (a, b) { return b.saldo - a.saldo; });
@@ -334,14 +346,14 @@ function renderCenarios() {
       '<p>Como você vai lidar com o resto do seu lucro este ano?</p>' +
       '<div class="cenarios">' +
         '<button class="cenario" id="btn-tradicional" type="button"><strong>Sem planejamento tributário</strong><br>Declaração tradicional</button>' +
-        '<button class="cenario destaque" id="btn-ideco" type="button"><strong>Com iDeCo ativado</strong><br>Abatimento fiscal (Categoria 1)</button>' +
+        '<button class="cenario destaque" id="btn-ideco" type="button"><strong>Com iDeCo ativado</strong><br>Aportando o teto de ¥68.000/mês</button>' +
       '</div>';
   }
   const resultado = state.escolha === 'tradicional' ? state.sim.cenarioA : state.sim.cenarioB;
   const titulo = state.escolha === 'tradicional' ? 'Sem abatimento' : 'Escudo Ativado';
   const texto = state.escolha === 'tradicional'
-    ? 'Você continuou sem planejamento tributário. Mais uma parte do lucro virou imposto.'
-    : 'Você ativou o iDeCo e recuperou parte do seu lucro de volta.';
+    ? 'Você continua pagando ' + formatarYen(state.sim.impostoObrigatorio) + ' de imposto todo mês, ano após ano, sem nenhuma proteção.'
+    : 'Você ativou o iDeCo e recupera ' + formatarYen(state.sim.diferencaMensal) + ' por mês que iriam pro imposto.';
   return '<div class="fichas-contador">Saldo: <span class="fichas-valor" id="contador-lucro">' + formatarYen(resultado) + '</span></div>' +
     '<h1>' + titulo + '</h1>' +
     '<p>' + texto + '</p>' +
@@ -372,7 +384,7 @@ function renderComparacao() {
 
 function renderSocial() {
   const saldoJogador = state.escolha === 'tradicional' ? state.sim.cenarioA : state.sim.cenarioB;
-  const comparacao = montarComparacao(state.sim.saldoAposImposto, state.nome, saldoJogador);
+  const comparacao = montarComparacao(state.sim, state.nome, saldoJogador);
   const linhas = comparacao.map(function (p, i) {
     const destaque = p.jogador ? ' class="linha-jogador"' : '';
     return '<tr' + destaque + '><td>' + (i + 1) + 'º</td><td>' + (p.nome || 'Você') + '</td><td>' + formatarYen(p.saldo) + '</td></tr>';
