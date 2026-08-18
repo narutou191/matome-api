@@ -1,4 +1,11 @@
+import sys
 from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parent.parent       # extrator-imoveis/
+_REPO_ROOT = _ROOT.parent                             # repo root (has vision/)
+for _path in (_ROOT, _REPO_ROOT):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
