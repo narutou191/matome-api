@@ -37,6 +37,11 @@
     margin-top: 8px;
   }
   button:disabled { opacity: 0.5; }
+  button.secondary {
+    background: transparent;
+    color: var(--tg-theme-text-color, #111111);
+    border: 1px solid #999;
+  }
   pre {
     white-space: pre-wrap;
     word-break: break-word;
@@ -74,6 +79,7 @@
   <div id="error" class="error hidden"></div>
   <pre id="result" class="hidden"></pre>
   <button id="copy-btn" class="hidden">📋 Copiar</button>
+  <button id="reset-btn" class="hidden secondary">🔄 Nova consulta</button>
 
 <script>
   const tg = window.Telegram?.WebApp;
@@ -88,6 +94,7 @@
   const errorBox = document.getElementById('error');
   const resultBox = document.getElementById('result');
   const copyBtn = document.getElementById('copy-btn');
+  const resetBtn = document.getElementById('reset-btn');
 
   function updateZoneLabel(input, zoneId, labelId, fallback) {
     const label = document.getElementById(labelId);
@@ -131,9 +138,11 @@
       resultBox.textContent = data.result;
       resultBox.classList.remove('hidden');
       copyBtn.classList.remove('hidden');
+      resetBtn.classList.remove('hidden');
     } catch (err) {
       errorBox.textContent = `❌ ${err.message}`;
       errorBox.classList.remove('hidden');
+      resetBtn.classList.remove('hidden');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Processar';
@@ -144,6 +153,16 @@
     await navigator.clipboard.writeText(resultBox.textContent);
     copyBtn.textContent = '✅ Copiado!';
     setTimeout(() => { copyBtn.textContent = '📋 Copiar'; }, 1500);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    file1.value = '';
+    file2.value = '';
+    refreshState();
+    errorBox.classList.add('hidden');
+    resultBox.classList.add('hidden');
+    copyBtn.classList.add('hidden');
+    resetBtn.classList.add('hidden');
   });
 </script>
 </body>
