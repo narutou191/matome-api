@@ -127,6 +127,13 @@ def test_extract_maps_generic_api_error(mock_anthropic_cls):
         extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
 
 
+def test_extract_raises_when_api_key_missing(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+
+    with pytest.raises(VisionExtractionError, match="configuração do servidor"):
+        extract([(b"img", "image/png")], api_key=None)
+
+
 @patch("core.vision_client.Anthropic")
 def test_extract_raises_when_response_content_is_empty(mock_anthropic_cls):
     mock_client = MagicMock()

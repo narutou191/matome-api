@@ -2,6 +2,7 @@ services:
   - type: web
     name: extrator-imoveis
     runtime: python-3.11
+    rootDir: extrator-imoveis
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn web.app:app --host 0.0.0.0 --port $PORT
     envVars:

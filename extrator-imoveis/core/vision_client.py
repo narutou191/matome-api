@@ -45,7 +45,10 @@ def extract(images: list[tuple[bytes, str]], api_key: str | None = None) -> dict
     if not images:
         raise VisionExtractionError("Nenhuma imagem enviada")
 
-    client = Anthropic(api_key=api_key or os.environ["ANTHROPIC_API_KEY"])
+    key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise VisionExtractionError("Erro de configuração do servidor. Avise o administrador")
+    client = Anthropic(api_key=key, timeout=60.0)
 
     content = [
         {

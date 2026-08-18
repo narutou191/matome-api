@@ -61,12 +61,12 @@
 
   <div class="drop-zone" id="zone1" onclick="document.getElementById('file1').click()">
     <span id="zone1-label">📷 Captura 1 (物件概要)</span>
-    <input type="file" id="file1" accept="image/*">
+    <input type="file" id="file1" accept="image/png,image/jpeg,image/webp">
   </div>
 
   <div class="drop-zone" id="zone2" onclick="document.getElementById('file2').click()">
     <span id="zone2-label">📷 Captura 2 (その他詳細)</span>
-    <input type="file" id="file2" accept="image/*">
+    <input type="file" id="file2" accept="image/png,image/jpeg,image/webp">
   </div>
 
   <button id="submit-btn" disabled>Processar</button>
@@ -117,12 +117,17 @@
 
     try {
       const response = await fetch('/api/process', { method: 'POST', body: formData });
-      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Erro ao processar as imagens');
+        let msg = 'Erro ao processar as imagens';
+        try {
+          const errData = await response.json();
+          if (typeof errData.detail === 'string') msg = errData.detail;
+        } catch (_) { /* body wasn't JSON, keep default message */ }
+        throw new Error(msg);
       }
 
+      const data = await response.json();
       resultBox.textContent = data.result;
       resultBox.classList.remove('hidden');
       copyBtn.classList.remove('hidden');

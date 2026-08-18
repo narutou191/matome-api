@@ -41,6 +41,10 @@ python -m pytest -v
 
 Hospedado no Render via `render.yaml` (mesmo padrão do `matome_api.py` na raiz do repo):
 
+Como a raiz do repositório já tem seu próprio `render.yaml` (de outro projeto), este `render.yaml`
+aninhado usa `rootDir: extrator-imoveis` e precisa ser cadastrado no painel do Render como um
+serviço adicional apontando pra esse arquivo, não descoberto automaticamente no Blueprint raiz.
+
 1. Conectar o repositório no Render, apontando pra pasta `extrator-imoveis/`
 2. Configurar a env var `ANTHROPIC_API_KEY` no painel do Render (não fica no `render.yaml` por segurança)
 3. Depois do deploy, copiar a URL pública gerada pro `WEBAPP_URL` do bot
