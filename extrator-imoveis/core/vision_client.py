@@ -31,7 +31,8 @@ Campos (use "" quando o dado não existir em nenhuma das imagens):
   "cleaning_fee_text": "クリーニング費, ex: 70,000円",
   "support_fee_text": "taxa de suporte mensal recorrente ATUALMENTE aplicável, procure com cuidado em parágrafos de 特記事項/備考, não só em tabelas — costuma aparecer embutida em frases longas. ATENÇÃO: é comum o texto mencionar DOIS valores condicionados a uma data de corte, ex: '24時間サポート費用（月額）330円が必要です。5月12日以降に入居申込の場合、24時間サポート費用と収納手数料は不要となりますが、ruumサポート費用1,980円（月額）が必要です'. Nesse padrão, o valor 'X月X日以降' (depois de tal data) é o que vale hoje, já que essa data sempre já passou — extraia esse valor (no exemplo, 1,980円, não 330円). Se não houver esse padrão de duas datas, extraia o único valor mencionado normalmente (ex: '24時間サポート費用330円' sozinho, ou '緊急駆けつけサービス550円')",
   "key_set_text": "鍵セット費, ex: 3,300円",
-  "agency_fee_text": "仲介手数料, deixe \\"\\" se não aparecer explicitamente na imagem"
+  "agency_fee_text": "仲介手数料, deixe \\"\\" se não aparecer explicitamente na imagem",
+  "card_fee_text": "収納手数料 (taxa extra cobrada apenas se o aluguel for pago por cartão de crédito), ex: 170円. Deixe \\"\\" se não for mencionado"
 }
 
 Retorne APENAS o JSON."""

@@ -76,3 +76,39 @@ def test_process_property_converts_month_multiplier_key_money_and_deposit(mock_e
 
     assert "🔑 礼金: ¥82,500" in result
     assert "🏦 敷金: ¥41,250" in result
+
+
+RAW_WITH_PARKING_RANGE = {
+    **RAW_EXAMPLE,
+    "parking_text": "3,300円〜4,950円",
+}
+
+
+@patch("core.service.extract", return_value=RAW_WITH_PARKING_RANGE)
+def test_process_property_flags_parking_price_range(mock_extract):
+    result = process_property([(b"img1", "image/png"), (b"img2", "image/png")])
+
+    assert "🚗 駐車場: ¥3,300" in result  # calculation still uses the minimum
+    assert "faixa de valores" in result
+    assert "3,300円〜4,950円" in result
+
+
+RAW_WITH_CARD_FEE = {
+    **RAW_EXAMPLE,
+    "card_fee_text": "170円",
+}
+
+
+@patch("core.service.extract", return_value=RAW_WITH_CARD_FEE)
+def test_process_property_flags_credit_card_fee(mock_extract):
+    result = process_property([(b"img1", "image/png"), (b"img2", "image/png")])
+
+    assert "170円" in result
+    assert "cartão de crédito" in result
+
+
+@patch("core.service.extract", return_value=RAW_EXAMPLE)
+def test_process_property_no_notes_when_nothing_ambiguous(mock_extract):
+    result = process_property([(b"img1", "image/png"), (b"img2", "image/png")])
+
+    assert result == EXPECTED  # byte-identical, no trailing notes appended
