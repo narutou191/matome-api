@@ -2,7 +2,7 @@
 
 **Data:** 2026-08-18
 **Status:** Design aprovado
-**Escopo:** Novo projeto isolado (`extrator-imoveis/`) que extrai dados de 2 capturas de tela de um anúncio de imóvel japonês (DK Portal ou similar) e devolve um resumo de custos formatado com emojis, acessível via widget web standalone e via Telegram (como Mini App).
+**Escopo:** Novo projeto isolado (`extrator-imoveis/`) que extrai dados de 2 capturas de tela de um anúncio de imóvel japonês (DK Portal ou similar) e devolve um resumo de custos formatado com emojis. **v1 é só Telegram** — o widget web existe apenas como a superfície do Telegram Mini App, não é divulgado nem usado como site avulso.
 
 ---
 
@@ -51,7 +51,7 @@ extrator-imoveis/
 │   ├── formatter.py       # PropertyData → texto formatado com emojis
 │   └── service.py         # orquestra: imagens → vision_client → normalize() → formatter
 ├── web/
-│   ├── index.html         # upload de 2 imagens; funciona standalone E como Telegram Mini App
+│   ├── index.html         # upload de 2 imagens; superfície do Telegram Mini App (não é site avulso)
 │   └── app.py             # FastAPI: serve o HTML + endpoint POST /api/process
 ├── telegram/
 │   └── bot.py             # /start → botão que abre o Mini App (web/index.html hospedado)
@@ -73,7 +73,7 @@ Um bot Python tradicional (`python-telegram-bot`) recebendo `message.photo` semp
 
 ## 3. Fluxo de dados
 
-1. Usuário abre o widget (direto no navegador, ou via botão do bot do Telegram que abre o Mini App) e faz upload das 2 capturas de tela (物件概要 + その他詳細)
+1. Usuário toca no botão do bot do Telegram, que abre o Mini App, e faz upload das 2 capturas de tela (物件概要 + その他詳細)
 2. `web/app.py` recebe as 2 imagens em `POST /api/process` e chama `core/service.py`
 3. `core/service.py`:
    a. `vision_client.extract(imagens)` — **1 chamada** à Claude Vision API com as 2 imagens na mesma mensagem, pedindo o JSON já documentado no `CLAUDE.md` (`rent_text`, `parking_text`, `maintenance_detail`, `guarantee_monthly_amount_text`, `agency_fee_text`, etc.)
@@ -139,7 +139,7 @@ Além disso, o texto final inclui o aviso padrão já usado pelo usuário:
 
 **`web/index.html`**
 - Upload de 2 imagens (drag-drop ou seleção), preview, botão "Processar"
-- Detecta se está rodando dentro do Telegram (`window.Telegram?.WebApp`) pra ajustar tema/comportamento, mas funciona igual fora dele
+- Usa o SDK do Telegram (`window.Telegram.WebApp`) pra tema e comportamento nativo — só precisa funcionar bem dentro do Telegram, não como página avulsa (v1)
 - Mostra resultado com botão "📋 Copiar"
 
 **`telegram/bot.py`** (novo bot, token próprio via BotFather)
@@ -181,6 +181,7 @@ Como a API key mora no servidor, o usuário nunca vê erros de "chave inválida"
 
 ## 8. Fora de escopo (v1)
 
+- Uso do widget web como site avulso fora do Telegram — v1 é só Telegram, o Mini App é a única forma de acesso
 - Geração de Excel a partir do resultado (o VISION já faz isso separadamente; pode ser integrado depois se necessário)
 - Histórico de imóveis processados
 - Envio do resultado de volta pro chat do Telegram via `sendData()` — o resultado fica só na tela do Mini App por enquanto, com botão de copiar
