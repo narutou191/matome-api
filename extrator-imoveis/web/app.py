@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from core.service import process_property
 from core.vision_client import VisionExtractionError
@@ -41,7 +42,7 @@ async def process(images: list[UploadFile] = File(...)):
     payload = [(await img.read(), img.content_type or "image/png") for img in images]
 
     try:
-        result = process_property(payload)
+        result = await run_in_threadpool(process_property, payload)
     except VisionExtractionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
