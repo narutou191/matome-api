@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extrator de Imóveis</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, system-ui, sans-serif;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #111111);
+  }
+  h1 { font-size: 1.2rem; }
+  .drop-zone {
+    border: 2px dashed #999;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .drop-zone.filled { border-color: #2ea043; }
+  input[type="file"] { display: none; }
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--tg-theme-button-color, #2ea043);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    font-size: 1rem;
+    margin-top: 8px;
+  }
+  button:disabled { opacity: 0.5; }
+  pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: rgba(127, 127, 127, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 16px;
+  }
+  .error {
+    background: #ffe1e1;
+    color: #a30000;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <h1>🏠 Extrator de Imóveis</h1>
+  <p>Envie as 2 capturas de tela do anúncio (物件概要 e その他詳細).</p>
+
+  <div class="drop-zone" id="zone1" onclick="document.getElementById('file1').click()">
+    <span id="zone1-label">📷 Captura 1 (物件概要)</span>
+    <input type="file" id="file1" accept="image/*">
+  </div>
+
+  <div class="drop-zone" id="zone2" onclick="document.getElementById('file2').click()">
+    <span id="zone2-label">📷 Captura 2 (その他詳細)</span>
+    <input type="file" id="file2" accept="image/*">
+  </div>
+
+  <button id="submit-btn" disabled>Processar</button>
+
+  <div id="error" class="error hidden"></div>
+  <pre id="result" class="hidden"></pre>
+  <button id="copy-btn" class="hidden">📋 Copiar</button>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  const file1 = document.getElementById('file1');
+  const file2 = document.getElementById('file2');
+  const submitBtn = document.getElementById('submit-btn');
+  const errorBox = document.getElementById('error');
+  const resultBox = document.getElementById('result');
+  const copyBtn = document.getElementById('copy-btn');
+
+  function updateZoneLabel(input, zoneId, labelId, fallback) {
+    const label = document.getElementById(labelId);
+    label.textContent = input.files.length ? `✅ ${input.files[0].name}` : fallback;
+    document.getElementById(zoneId).classList.toggle('filled', input.files.length > 0);
+  }
+
+  function refreshState() {
+    updateZoneLabel(file1, 'zone1', 'zone1-label', '📷 Captura 1 (物件概要)');
+    updateZoneLabel(file2, 'zone2', 'zone2-label', '📷 Captura 2 (その他詳細)');
+    submitBtn.disabled = !(file1.files.length && file2.files.length);
+  }
+
+  file1.addEventListener('change', refreshState);
+  file2.addEventListener('change', refreshState);
+
+  submitBtn.addEventListener('click', async () => {
+    errorBox.classList.add('hidden');
+    resultBox.classList.add('hidden');
+    copyBtn.classList.add('hidden');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Processando...';
+
+    const formData = new FormData();
+    formData.append('images', file1.files[0]);
+    formData.append('images', file2.files[0]);
+
+    try {
+      const response = await fetch('/api/process', { method: 'POST', body: formData });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Erro ao processar as imagens');
+      }
+
+      resultBox.textContent = data.result;
+      resultBox.classList.remove('hidden');
+      copyBtn.classList.remove('hidden');
+    } catch (err) {
+      errorBox.textContent = `❌ ${err.message}`;
+      errorBox.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Processar';
+    }
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(resultBox.textContent);
+    copyBtn.textContent = '✅ Copiado!';
+    setTimeout(() => { copyBtn.textContent = '📋 Copiar'; }, 1500);
+  });
+</script>
+</body>
+</html>
