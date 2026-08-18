@@ -82,10 +82,14 @@ def extract(images: list[tuple[bytes, str]], api_key: str | None = None) -> dict
     except anthropic.APIError as exc:
         raise VisionExtractionError("Erro ao consultar a Claude API. Tente novamente") from exc
 
-    if not response.content:
+    text = None
+    for block in response.content:
+        if getattr(block, "type", None) == "text":
+            text = block.text
+            break
+    if text is None:
         raise VisionExtractionError("Claude não retornou uma resposta válida")
 
-    text = response.content[0].text
     match = re.search(r"\{[\s\S]*\}", text)
     if not match:
         raise VisionExtractionError(

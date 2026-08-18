@@ -9,6 +9,7 @@ from core.vision_client import extract, VisionExtractionError
 
 def _fake_response(text):
     block = MagicMock()
+    block.type = "text"
     block.text = text
     response = MagicMock()
     response.content = [block]
@@ -139,6 +140,49 @@ def test_extract_raises_when_response_content_is_empty(mock_anthropic_cls):
     mock_client = MagicMock()
     response = MagicMock()
     response.content = []
+    mock_client.messages.create.return_value = response
+    mock_anthropic_cls.return_value = mock_client
+
+    with pytest.raises(VisionExtractionError, match="Claude não retornou"):
+        extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
+
+
+@patch("core.vision_client.Anthropic")
+def test_extract_skips_leading_thinking_block(mock_anthropic_cls):
+    """Extended-thinking-capable models can return a ThinkingBlock (type='thinking',
+    no usable .text) before the actual TextBlock — extract() must find the text
+    block instead of assuming content[0] is always text.
+    """
+    thinking_block = MagicMock()
+    thinking_block.type = "thinking"
+    del thinking_block.text  # ThinkingBlock has no .text attribute in the real SDK
+
+    text_block = MagicMock()
+    text_block.type = "text"
+    text_block.text = '{"rent_text": "82,500円"}'
+
+    response = MagicMock()
+    response.content = [thinking_block, text_block]
+
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = response
+    mock_anthropic_cls.return_value = mock_client
+
+    result = extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
+
+    assert result == {"rent_text": "82,500円"}
+
+
+@patch("core.vision_client.Anthropic")
+def test_extract_raises_when_only_thinking_blocks_present(mock_anthropic_cls):
+    thinking_block = MagicMock()
+    thinking_block.type = "thinking"
+    del thinking_block.text
+
+    response = MagicMock()
+    response.content = [thinking_block]
+
+    mock_client = MagicMock()
     mock_client.messages.create.return_value = response
     mock_anthropic_cls.return_value = mock_client
 
