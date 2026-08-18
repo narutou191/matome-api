@@ -76,6 +76,11 @@ def extract(images: list[tuple[bytes, str]], api_key: str | None = None) -> dict
         ) from exc
     except (anthropic.APITimeoutError, anthropic.APIConnectionError) as exc:
         raise VisionExtractionError("Demorou muito para responder. Tente novamente") from exc
+    except anthropic.APIError as exc:
+        raise VisionExtractionError("Erro ao consultar a Claude API. Tente novamente") from exc
+
+    if not response.content:
+        raise VisionExtractionError("Claude não retornou uma resposta válida")
 
     text = response.content[0].text
     match = re.search(r"\{[\s\S]*\}", text)
@@ -84,4 +89,9 @@ def extract(images: list[tuple[bytes, str]], api_key: str | None = None) -> dict
             "Não consegui extrair dados dessas imagens. Tente capturas mais nítidas"
         )
 
-    return json.loads(match.group(0))
+    try:
+        return json.loads(match.group(0))
+    except json.JSONDecodeError as exc:
+        raise VisionExtractionError(
+            "Não consegui extrair dados dessas imagens. Tente capturas mais nítidas"
+        ) from exc

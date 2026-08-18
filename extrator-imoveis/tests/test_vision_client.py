@@ -103,3 +103,37 @@ def test_extract_maps_timeout_error(mock_anthropic_cls):
 
     with pytest.raises(VisionExtractionError, match="Demorou muito"):
         extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
+
+
+@patch("core.vision_client.Anthropic")
+def test_extract_raises_when_json_is_malformed(mock_anthropic_cls):
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = _fake_response("{invalid json")
+    mock_anthropic_cls.return_value = mock_client
+
+    with pytest.raises(VisionExtractionError, match="Não consegui extrair"):
+        extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
+
+
+@patch("core.vision_client.Anthropic")
+def test_extract_maps_generic_api_error(mock_anthropic_cls):
+    mock_client = MagicMock()
+    mock_client.messages.create.side_effect = anthropic.InternalServerError(
+        "internal server error", response=_fake_httpx_response(500), body=None
+    )
+    mock_anthropic_cls.return_value = mock_client
+
+    with pytest.raises(VisionExtractionError, match="Erro ao consultar a Claude API"):
+        extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
+
+
+@patch("core.vision_client.Anthropic")
+def test_extract_raises_when_response_content_is_empty(mock_anthropic_cls):
+    mock_client = MagicMock()
+    response = MagicMock()
+    response.content = []
+    mock_client.messages.create.return_value = response
+    mock_anthropic_cls.return_value = mock_client
+
+    with pytest.raises(VisionExtractionError, match="Claude não retornou"):
+        extract([(b"fake-image-bytes", "image/png")], api_key="test-key")
