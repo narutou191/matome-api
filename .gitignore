@@ -21,3 +21,7 @@ Thumbs.db
 
 # extrator-imoveis environment
 extrator-imoveis/.env
+
+# Exceções para API MATOME
+!matome_api.py
+!matome_pdf_generator.py
