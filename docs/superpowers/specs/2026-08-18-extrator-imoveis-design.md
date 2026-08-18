@@ -53,7 +53,7 @@ extrator-imoveis/
 ├── web/
 │   ├── index.html         # upload de 2 imagens; superfície do Telegram Mini App (não é site avulso)
 │   └── app.py             # FastAPI: serve o HTML + endpoint POST /api/process
-├── telegram/
+├── telegram_bot/
 │   └── bot.py             # /start → botão que abre o Mini App (web/index.html hospedado)
 ├── .env.example
 ├── requirements.txt
@@ -142,7 +142,7 @@ Além disso, o texto final inclui o aviso padrão já usado pelo usuário:
 - Usa o SDK do Telegram (`window.Telegram.WebApp`) pra tema e comportamento nativo — só precisa funcionar bem dentro do Telegram, não como página avulsa (v1)
 - Mostra resultado com botão "📋 Copiar"
 
-**`telegram/bot.py`** (novo bot, token próprio via BotFather)
+**`telegram_bot/bot.py`** (novo bot, token próprio via BotFather)
 - `/start` → mensagem de boas-vindas + botão inline do tipo Web App apontando para a URL pública de `web/index.html`
 - Não processa fotos diretamente — todo o trabalho pesado acontece dentro do Mini App
 
@@ -174,7 +174,7 @@ Como a API key mora no servidor, o usuário nunca vê erros de "chave inválida"
 ## 7. Deploy
 
 - `web/app.py` hospedado publicamente (Render, seguindo o padrão do `render.yaml` já usado no repo) — necessário porque Telegram Mini Apps exigem HTTPS público.
-- `telegram/bot.py` roda separado (pode ser local/24-7 no mini PC do usuário, como os outros bots do repo) — só precisa de rede pra falar com a API do Telegram e conhecer a URL pública do Mini App.
+- `telegram_bot/bot.py` roda separado (pode ser local/24-7 no mini PC do usuário, como os outros bots do repo) — só precisa de rede pra falar com a API do Telegram e conhecer a URL pública do Mini App.
 - `ANTHROPIC_API_KEY` configurada uma vez no `.env` do servidor hospedado.
 
 ---
