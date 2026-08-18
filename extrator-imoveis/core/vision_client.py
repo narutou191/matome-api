@@ -20,8 +20,8 @@ Campos (use "" quando o dado não existir em nenhuma das imagens):
   "room_number": "número do apto, ex: 2C",
   "rent_text": "家賃, ex: 42,000円",
   "parking_text": "駐車場使用料, ex: 3,300円 ou -",
-  "deposit_text": "敷金, ex: 0円 ou -",
-  "key_money_text": "礼金, ex: 0円 ou -",
+  "deposit_text": "敷金, ex: 0円 ou 0.5ヶ月 ou -",
+  "key_money_text": "礼金, ex: 0円 ou 1ヶ月 ou -",
   "maintenance_text": "共益費等, ex: 3,000円",
   "maintenance_detail": "detalhamento do共益費等 se houver, cada item com seu valor em 円",
   "other_fees_text": "texto de その他費用 tal como aparece, ex: 町内会費 600円",
@@ -29,7 +29,7 @@ Campos (use "" quando o dado não existir em nenhuma das imagens):
   "guarantee_monthly_rate": "taxa mensal do seguro, ex: 2.2%又は5.5%",
   "guarantee_monthly_amount_text": "valor mensal do 保証委託料, ex: 1,119円（駐車場1台、2.2%プランの場合）",
   "cleaning_fee_text": "クリーニング費, ex: 70,000円",
-  "support_fee_text": "taxa de suporte mensal, ex: ruumサポート費用1,980円 ou 24時間サポート費用330円",
+  "support_fee_text": "taxa de suporte mensal recorrente, procure com cuidado em parágrafos de 特記事項/備考, não só em tabelas — costuma aparecer embutida em frases como 'ruumサポート費用1,980円（月額）が必要です' ou '24時間サポート費用（月額）330円' ou '緊急駆けつけサービス550円'. Extraia o valor em 円 mesmo se estiver no meio de uma frase longa",
   "key_set_text": "鍵セット費, ex: 3,300円",
   "agency_fee_text": "仲介手数料, deixe \\"\\" se não aparecer explicitamente na imagem"
 }

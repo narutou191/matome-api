@@ -59,3 +59,20 @@ def test_process_property_matches_reference_example(mock_extract):
 
     assert result == EXPECTED
     mock_extract.assert_called_once_with([(b"img1", "image/png"), (b"img2", "image/png")])
+
+
+RAW_WITH_MONTH_MULTIPLIER_KEY_MONEY = {
+    **RAW_EXAMPLE,
+    "rent_text": "82,500円",
+    "key_money_text": "1ヶ月",
+    "deposit_text": "0.5ヶ月",
+    "agency_fee_text": "90,750円",
+}
+
+
+@patch("core.service.extract", return_value=RAW_WITH_MONTH_MULTIPLIER_KEY_MONEY)
+def test_process_property_converts_month_multiplier_key_money_and_deposit(mock_extract):
+    result = process_property([(b"img1", "image/png"), (b"img2", "image/png")])
+
+    assert "🔑 礼金: ¥82,500" in result
+    assert "🏦 敷金: ¥41,250" in result
